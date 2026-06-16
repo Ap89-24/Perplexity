@@ -33,4 +33,6 @@ userSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
 
-export default model("User", userSchema);
+const userModel = model("User", userSchema);
+
+export default userModel;

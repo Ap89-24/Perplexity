@@ -28,4 +28,6 @@ messageSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
 
-export default model("Message", messageSchema);
+const messageModel = model("Message", messageSchema);
+
+export default messageModel;

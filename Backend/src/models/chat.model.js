@@ -22,4 +22,6 @@ chatSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
 
-export default model("Chat", chatSchema);
+const chatModel = model("Chat", chatSchema);
+
+export default chatModel;
