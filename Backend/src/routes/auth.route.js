@@ -4,6 +4,12 @@ import { register } from "../controllers/auth.controller.js";
 
 const authRouter = Router();
 
+
+/* 
+@description: Register a new user
+@route: POST /api/auth/register
+@access: Public
+*/
 authRouter.post("/register", registerValidator, register);
 
 
