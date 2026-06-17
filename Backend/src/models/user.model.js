@@ -33,6 +33,11 @@ userSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
 
+
+/* 
+@description: Hash the password before saving the user document...
+*/
+
 userSchema.pre('save' , async function (next) {
   if(!this.isModified("password")) return next();
 
