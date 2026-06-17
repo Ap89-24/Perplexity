@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
+import bcrypt from "bcrypt";
 
 const userSchema = new Schema({
   username: {
@@ -38,15 +39,14 @@ userSchema.virtual("id").get(function () {
 @description: Hash the password before saving the user document...
 */
 
-userSchema.pre('save' , async function (next) {
-  if(!this.isModified("password")) return next();
+userSchema.pre('save' , async function () {
+  if(!this.isModified("password")) return;
 
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
   } catch (err) {
-    next(err);
+    throw err;
   }
 });
 

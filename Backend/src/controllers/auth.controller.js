@@ -1,6 +1,7 @@
 import userModel from "../models/user.model.js";
 import jsonwebtoken from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import sendEmail from "../services/mail.service.js";
 
 const register = async (req, res) => {
   const { username, password, email } = req.body;
@@ -25,6 +26,20 @@ const register = async (req, res) => {
     username,
     email,
     password
+  });
+
+
+  /* 
+  @description: Send a welcome email to the newly registered user
+  */
+  await sendEmail({
+    to: email,
+    subject: "Welcome to Our Perplexity App!",
+    html: `<h1>Welcome, ${username}!</h1>
+    <p>Thank you for registering with our Perplexity App. We're excited to have you on board!</p>
+    <p>Feel free to explore the app and let us know if you have any questions.</p>
+    <p>Best regards,<br/>The Perplexity Team</p>
+    `
   });
 
   return res.status(201).json({
