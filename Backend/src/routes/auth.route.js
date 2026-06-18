@@ -1,6 +1,6 @@
 import { Router } from "express";
 import registerValidator from "../validators/register.validator.js";
-import { register, verifyEmail } from "../controllers/auth.controller.js";
+import { login, register, verifyEmail } from "../controllers/auth.controller.js";
 import loginValidator from "../validators/login.validator.js";
 
 const authRouter = Router();
@@ -21,7 +21,7 @@ authRouter.post("/register", registerValidator, register);
 @access: Public
 @note: The login route will validate the user's credentials and return a JWT token if the login is successful.
 */
-authRouter.post("/login" , loginValidator);
+authRouter.post("/login" , loginValidator , login);
 
 
 /* 

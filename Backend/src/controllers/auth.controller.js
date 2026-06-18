@@ -32,7 +32,7 @@ const register = async (req, res) => {
 
   const emailVerifyToken = jwt.sign({
     email: user.email
-  } , process.env.JWT_SECRET)
+  }, process.env.JWT_SECRET)
 
   /* 
   @description: Send a welcome email to the newly registered user
@@ -62,34 +62,36 @@ const register = async (req, res) => {
 };
 
 
-const verifyEmail = async (req , res) => {
-  const {token} = req.query;
+const verifyEmail = async (req, res) => {
 
-  if(!token){
-    return res.status(400).json({
-      success: false,
-      message: "Token is required for email verification."
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Token is required for email verification."
+      });
+    };
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await userModel.findOne({
+      email: decoded.email,
     });
-  };
 
-  const decoded = jwt.verify(token , process.env.JWT_SECRET);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid token. User not found."
+      });
+    };
 
-  const user = await userModel.findOne({
-    email: decoded.email,
-  });
+    user.verified = true;
 
-  if(!user){
-    return res.status(400).json({
-      success: false,
-      message: "Invalid token. User not found."
-    });
-  };
+    await user.save();
 
-  user.verified = true;
-
-  await user.save();
-
-  const html = `
+    const html = `
     <h1>Email Verified Successfully!</h1>
     <p>Thank you for verifying your email address. Your account is now active.</p>
     <p>You can now log in to the Perplexity App and start exploring!</p>
@@ -97,8 +99,72 @@ const verifyEmail = async (req , res) => {
     <a href="http://localhost:3000/login">Go to Login</a>
   `
 
-  res.status(200).send(html);
+    return res.status(200).send(html);
+  } catch (err) {
+    console.error("Error during email verification: ", err);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred during email verification.",
+      error: err.message
+    });
+  };
+
 };
 
-export { register , verifyEmail };
+
+const login = async (req, res) => {
+  const {email, password} = req.body;
+
+  const user = await userModel.findOne({
+    email,
+  });
+
+  if(!user){
+    return res.status(400).json({
+      success: false,
+      message: "Invalid email or password.",
+      err: "User not found"
+    });
+  };
+
+  const isPasswordValid = await user.comparePassword(password);
+
+  if(!isPasswordValid){
+    return res.status(400).json({
+      success: false,
+      message: "Invalid email or password.",
+      err: "Incorrect password"
+    });
+  };
+
+  /* 
+  @description: Check if the user's email is verified before allowing them to log in.
+  */
+  if(!user.verified){
+    return res.status(400).json({
+      success: false,
+      message: "Please verify your email before logging in.",
+      err: "Email not verified"
+    });
+  };
+
+  const token = jwt.sign({
+    id: user.id,
+    username: user.username
+  } , process.env.JWT_SECRET , {
+    expiresIn: "2d"
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Login successful.",
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email
+    },
+  })
+};
+
+export { register, verifyEmail, login };
 
