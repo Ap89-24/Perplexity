@@ -155,6 +155,8 @@ const login = async (req, res) => {
     expiresIn: "2d"
   });
 
+  res.cookie("token" , token);
+
   return res.status(200).json({
     success: true,
     message: "Login successful.",
@@ -166,5 +168,26 @@ const login = async (req, res) => {
   })
 };
 
-export { register, verifyEmail, login };
+
+const getMe = async (req, res) => {
+  const userId = req.user.id;
+
+  const user = await userModel.findById(userId).select("-password");
+
+  if(!user) {
+    return res.status(401).json({
+      success: false,
+      message: "User not found",
+      err: "User not found"
+    });
+  };
+
+  res.status(200).json({
+     success: true,
+     message: "User details fetched successfully",
+     user
+  });
+};
+
+export { register, verifyEmail, login, getMe };
 
