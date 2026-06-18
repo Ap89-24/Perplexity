@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import nodemailer from 'nodemailer';
 
+
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -25,6 +26,8 @@ transporter.verify((error , success) => {
         console.log("Transporter configuration is correct. Ready to send emails.");
     }
 });
+
+
 
 
 

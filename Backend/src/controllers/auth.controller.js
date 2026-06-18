@@ -2,6 +2,7 @@ import userModel from "../models/user.model.js";
 import jsonwebtoken from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import sendEmail from "../services/mail.service.js";
+import jwt from "jsonwebtoken";
 
 const register = async (req, res) => {
   const { username, password, email } = req.body;
@@ -29,6 +30,10 @@ const register = async (req, res) => {
   });
 
 
+  const emailVerifyToken = jwt.sign({
+    email: user.email
+  } , process.env.JWT_SECRET)
+
   /* 
   @description: Send a welcome email to the newly registered user
   */
@@ -37,6 +42,8 @@ const register = async (req, res) => {
     subject: "Welcome to Our Perplexity App!",
     html: `<h1>Welcome, ${username}!</h1>
     <p>Thank you for registering with our Perplexity App. We're excited to have you on board!</p>
+    <p>Please click the link below to verify your email address:</p>
+    <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerifyToken}">Verify Email</a>
     <p>Feel free to explore the app and let us know if you have any questions.</p>
     <p>Best regards,<br/>The Perplexity Team</p>
     `
@@ -53,5 +60,45 @@ const register = async (req, res) => {
   });
 
 };
-export { register };
+
+
+const verifyEmail = async (req , res) => {
+  const {token} = req.query;
+
+  if(!token){
+    return res.status(400).json({
+      success: false,
+      message: "Token is required for email verification."
+    });
+  };
+
+  const decoded = jwt.verify(token , process.env.JWT_SECRET);
+
+  const user = await userModel.findOne({
+    email: decoded.email,
+  });
+
+  if(!user){
+    return res.status(400).json({
+      success: false,
+      message: "Invalid token. User not found."
+    });
+  };
+
+  user.verified = true;
+
+  await user.save();
+
+  const html = `
+    <h1>Email Verified Successfully!</h1>
+    <p>Thank you for verifying your email address. Your account is now active.</p>
+    <p>You can now log in to the Perplexity App and start exploring!</p>
+    <p>Best regards,<br/>The Perplexity Team</p>
+    <a href="http://localhost:3000/login">Go to Login</a>
+  `
+
+  res.status(200).send(html);
+};
+
+export { register , verifyEmail };
 
