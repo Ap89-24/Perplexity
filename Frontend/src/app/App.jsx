@@ -1,11 +1,14 @@
 import "./index.css";
+import { RouterProvider } from "react-router-dom";
+import { ThemeProvider } from "../context/ThemeContext";
+import { router } from "./app.routes";
 
 function App() {
   return (
-    <div className="bg-amber-300">
-     <h1>hello</h1>
-    </div>
-  )
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
