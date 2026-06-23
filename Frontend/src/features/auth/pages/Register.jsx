@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../../context/ThemeContext';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router';
+
 
 const Register = () => {
     const { isDark, toggleTheme } = useTheme();
@@ -16,6 +19,8 @@ const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
+    const { handleRegister } = useAuth();
+    const navigate = useNavigate();
 
     const calculatePasswordStrength = (password) => {
         let strength = 0;
@@ -72,55 +77,26 @@ const Register = () => {
         if (!validateForm()) {
             return;
         }
-
-        setLoading(true);
-        setError('');
-
-        try {
-            console.log('Register attempt with:', {
-                username: formData.username,
-                email: formData.email,
-                password: formData.password,
+        const response = await handleRegister(formData);
+        navigate("/login");
+        
+        if (response.ok) {
+            setSuccess('Registration successful! Please check your email to verify your account.');
+            setFormData({
+                username: '',
+                email: '',
+                password: '',
+                confirmPassword: '',
             });
-
-            // Replace with actual API endpoint
-            const response = await fetch('http://localhost:3000/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: formData.username,
-                    email: formData.email,
-                    password: formData.password,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess('Registration successful! Please check your email to verify your account.');
-                setFormData({
-                    username: '',
-                    email: '',
-                    password: '',
-                    confirmPassword: '',
-                });
-                setPasswordStrength(0);
-                // Redirect to login after 2 seconds
-                setTimeout(() => {
-                    // navigate('/login');
-                }, 2000);
-            } else {
-                setError(data.message || 'Registration failed. Please try again.');
-            }
-        } catch (err) {
-            setError('Network error. Please check your connection.');
-            console.error('Register error:', err);
-        } finally {
-            setLoading(false);
+            setPasswordStrength(0);
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                // navigate('/login');
+            }, 2000);
         }
+            
     };
+    
 
     const getPasswordStrengthColor = () => {
         if (passwordStrength === 0) return isDark ? 'bg-slate-600' : 'bg-slate-300';

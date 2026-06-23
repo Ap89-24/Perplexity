@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../../context/ThemeContext';
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 import { useAuth } from '../hooks/useAuth.js';
+import { useSelector } from 'react-redux';
 
 
 const Login = () => {
@@ -11,11 +12,18 @@ const Login = () => {
         email: '',
         password: '',
     });
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const { handleLogin } = useAuth();
     const navigate = useNavigate();
+    const user = useSelector(state => state.auth.user);
+    const loadings = useSelector(state => state.auth.loading);
+
+    if (!loadings && user) {
+        return <Navigate to="/login" replace />
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -31,6 +39,7 @@ const Login = () => {
         e.preventDefault();
         await handleLogin(formData);
         navigate("/");
+        if(error) setError("First verify your account")
 
       
     };
@@ -88,7 +97,11 @@ const Login = () => {
                         <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'
                             }`}>Welcome Back</h2>
                         <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                            Login to your Nexora account
+                            Registration successful! Please check your email to verify your account.
+                        </p>
+                        <br />
+                        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                            Then Login to your Nexora account
                         </p>
                     </div>
 
