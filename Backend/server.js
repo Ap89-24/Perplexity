@@ -1,15 +1,19 @@
 import dotenv from "dotenv";
 dotenv.config();
+import http from "http";
 import app from "./src/app.js";
 import connectDB from "./src/config/db.js";
 import testAi from "./src/services/ai.service.js";
+import { initSocket } from "./src/sockets/server.socket.js";
 
 
+const httpServer = http.createServer(app);
+initSocket(httpServer);
 
 const PORT = process.env.PORT || 3000;
 
 connectDB();
 
-app.listen(PORT , () => {
+httpServer.listen(PORT , () => {
     console.log(`Server in running on port ${PORT}`);
 })
