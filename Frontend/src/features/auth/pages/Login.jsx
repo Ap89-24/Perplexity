@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../../context/ThemeContext';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router';
+import { useAuth } from '../hooks/useAuth.js';
+
 
 const Login = () => {
     const { isDark, toggleTheme } = useTheme();
@@ -11,6 +14,8 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const { handleLogin } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,39 +29,10 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setError('');
+        await handleLogin(formData);
+        navigate("/");
 
-        try {
-            // Simulate API call
-            console.log('Login attempt with:', formData);
-
-            // Replace with actual API endpoint
-            const response = await fetch('http://localhost:3000/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Handle successful login
-                localStorage.setItem('token', data.token);
-                console.log('Login successful:', data);
-                // Redirect to dashboard or home page
-                // navigate('/dashboard');
-            } else {
-                setError(data.message || 'Login failed. Please try again.');
-            }
-        } catch (err) {
-            setError('Network error. Please check your connection.');
-            console.error('Login error:', err);
-        } finally {
-            setLoading(false);
-        }
+      
     };
 
     return (
@@ -79,7 +55,7 @@ const Login = () => {
             {/* Theme Toggle Button */}
             <button
                 onClick={toggleTheme}
-                className={`absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all duration-300 ${isDark
+                className={`absolute top-1 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all duration-300 ${isDark
                     ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700'
                     : 'bg-white text-slate-700 hover:bg-slate-100 shadow-lg'
                     }`}

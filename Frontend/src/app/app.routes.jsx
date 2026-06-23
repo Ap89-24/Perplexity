@@ -4,6 +4,10 @@ import Register from "../features/auth/pages/Register.jsx";
 
 export const router = createBrowserRouter([
     {
+        path: "/",
+        element: <h1>Home</h1>
+    },
+    {
         path: "/login",
         element: <Login />
     },
@@ -11,8 +15,4 @@ export const router = createBrowserRouter([
         path: "/register",
         element: <Register />
     },
-    {
-        path: "/",
-        element: <Login />
-    }
 ])

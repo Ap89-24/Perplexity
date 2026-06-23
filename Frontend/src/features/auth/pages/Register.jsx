@@ -156,7 +156,7 @@ const Register = () => {
             {/* Theme Toggle Button */}
             <button
                 onClick={toggleTheme}
-                className={`absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all duration-300 ${isDark
+                className={`absolute top-1 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all duration-300 ${isDark
                     ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700'
                     : 'bg-white text-slate-700 hover:bg-slate-100 shadow-lg'
                     }`}
