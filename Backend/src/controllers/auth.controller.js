@@ -39,13 +39,13 @@ const register = async (req, res) => {
   */
   await sendEmail({
     to: email,
-    subject: "Welcome to Our Perplexity App!",
+    subject: "Welcome to Our Nexora App!",
     html: `<h1>Welcome, ${username}!</h1>
-    <p>Thank you for registering with our Perplexity App. We're excited to have you on board!</p>
+    <p>Thank you for registering with our Nexora App. We're excited to have you on board!</p>
     <p>Please click the link below to verify your email address:</p>
     <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerifyToken}">Verify Email</a>
     <p>Feel free to explore the app and let us know if you have any questions.</p>
-    <p>Best regards,<br/>The Perplexity Team</p>
+    <p>Best regards,<br/>The Nexora Team</p>
     `
   });
 
@@ -94,8 +94,8 @@ const verifyEmail = async (req, res) => {
     const html = `
     <h1>Email Verified Successfully!</h1>
     <p>Thank you for verifying your email address. Your account is now active.</p>
-    <p>You can now log in to the Perplexity App and start exploring!</p>
-    <p>Best regards,<br/>The Perplexity Team</p>
+    <p>You can now log in to the Nexora App and start exploring!</p>
+    <p>Best regards,<br/>The Nexora Team</p>
     <a href="http://localhost:3000/login">Go to Login</a>
   `
 
