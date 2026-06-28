@@ -6,7 +6,7 @@ import { useChat } from '../hooks/useChat.js';
 const Dashboard = () => {
 
   const chat = useChat();
-  console.log("Dashboard Rendered");
+
 
   const { user } = useSelector((state) => state.auth);
   console.log(user);
