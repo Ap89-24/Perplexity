@@ -22,7 +22,7 @@ const Login = () => {
     const loadings = useSelector(state => state.auth.loading);
 
     if (!loadings && user) {
-        return <Navigate to="/login" replace />
+        return <Navigate to="/" replace />
     }
 
     const handleChange = (e) => {

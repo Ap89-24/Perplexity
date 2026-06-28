@@ -4,10 +4,10 @@ import { setUser, setLoading, setError } from "../auth.slice.js";
 
 
 
-export const useAuth = () => { 
+export const useAuth = () => {
     const dispatch = useDispatch();
-    
-    const handleRegister = async ({username, email, password}) => { 
+
+    const handleRegister = async ({ username, email, password }) => {
         try {
             dispatch(setLoading(true));
             const data = await register({ username, email, password });
@@ -18,10 +18,11 @@ export const useAuth = () => {
         }
     };
 
-    const handleLogin = async ({ email, password }) => { 
+    const handleLogin = async ({ email, password }) => {
         try {
             dispatch(setLoading(true));
             const data = await login({ email, password });
+            //console.log(data);
             dispatch(setUser(data.user));
         } catch (error) {
             dispatch(setError(error.response?.data?.message || "Login failed"));
