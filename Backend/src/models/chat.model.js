@@ -9,7 +9,7 @@ const chatSchema = new Schema({
   },
   title: {
     type: String,
-    required: true,
+    default: "New Chat",
     trim: true
   }
 }, {
