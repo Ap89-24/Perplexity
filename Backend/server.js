@@ -3,7 +3,6 @@ dotenv.config();
 import http from "http";
 import app from "./src/app.js";
 import connectDB from "./src/config/db.js";
-import testAi from "./src/services/ai.service.js";
 import { initSocket } from "./src/sockets/server.socket.js";
 
 
