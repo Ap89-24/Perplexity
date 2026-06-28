@@ -1,4 +1,5 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { HumanMessage } from "langchain";
 
 const model = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash-lite",
@@ -6,10 +7,13 @@ const model = new ChatGoogleGenerativeAI({
 });
 
 
-const testAi = async() => {
-    const response = await model.invoke("What is the capital of india?");
-    console.log(response.text);
+const generateResponse = async(message) => {
+  const response = await model.invoke([
+    new HumanMessage(message)
+    ]);
+    
+  return response.text;
 };
 
 
-export default testAi;
+export default generateResponse;

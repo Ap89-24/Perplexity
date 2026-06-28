@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import authRouter from "./routes/auth.route.js";
+import chatRouter from "./routes/chat.route.js";
 
 
 const app = express();
@@ -25,9 +26,19 @@ app.use(
 
 
 
-
+/* 
+@description -> Api's for auth....
+*/
 
 app.use("/api/auth", authRouter);
+
+/* 
+@description -> Api's for chat....
+*/
+
+app.use("/api/chats" , chatRouter);
+
+
 
 
 
