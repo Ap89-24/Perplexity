@@ -6,47 +6,45 @@ import { generateResponse, generateTitle } from "../services/ai.service.js";
 
 
 
-export const sendMessage = async (req, res) => { 
+export const sendMessage = async (req, res) => {
     const { message, chat: chatId } = req.body;
-    
-    
-    let title=null, chat=null;
-    
+
+
+    let title = null, chat = null;
+
     if (!chatId) {
-        
-         title = await generateTitle(message);
-        
-         chat = await chatModel.create({
+
+        title = await generateTitle(message);
+
+        chat = await chatModel.create({
             user: req.user.id,
             title
         });
     };
-    
-    
+
+    const currentChatId = chatId || chat.id;
+
     const userMessage = await messageModel.create({
-        chat: chatId || chat.id,
+        chat: currentChatId,
         content: message,
         role: "user"
     })
-    
-    const messages = await messageModel.find({ chat: chatId });
-    console.log(messages)
 
-    // const result = await generateResponse(message);
+    const messages = await messageModel.find({ chat: currentChatId });
 
-    // const AiMessages = await messageModel.create({
-    //     chat: chat.id,
-    //     content: result,
-    //     role: "AI"
-    // })
+    const result = await generateResponse(messages);
 
-    // return res.status(200).json({
-    //     AIResponse: result,
-    //     title,
-    //     chat,
-    //     userMessage,
-    //     AiMessages
-    // });
+    const AiMessages = await messageModel.create({
+        chat: currentChatId,
+        content: result,
+        role: "AI"
+    })
+
+    return res.status(200).json({
+        title,
+        chat,
+        AiMessages
+    });
 
 };
 

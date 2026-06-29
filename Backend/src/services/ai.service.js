@@ -1,6 +1,6 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMistralAI } from "@langchain/mistralai";
-import { HumanMessage , SystemMessage } from "langchain";
+import { AIMessage, HumanMessage , SystemMessage } from "langchain";
 
 const geminiModel = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash-lite",
@@ -14,11 +14,22 @@ const mistralModel = new ChatMistralAI({
 })
 
 
-export const generateResponse = async(message) => {
-  const response = await geminiModel.invoke([
-    new HumanMessage(message)
-    ]);
+export const generateResponse = async(messages) => {
+  const formattedMessages = messages
+    .map((msg) => {
+      if (msg.role === "user") {
+        return new HumanMessage(msg.content);
+      }
+
+      else if (msg.role === "AI" || msg.role === "assistant") {
+        return new AIMessage(msg.content);
+      }
+
+      return null;
+    })
     
+  const response = await mistralModel.invoke(formattedMessages);
+
   return response.text;
 };
 
