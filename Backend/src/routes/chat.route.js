@@ -1,6 +1,6 @@
 import { Router } from "express";
 import authUser from "../middleware/auth.middleware.js";
-import { getChats, getMessages, sendMessage } from "../controllers/chat.controller.js";
+import { deleteChat, getChats, getMessages, sendMessage } from "../controllers/chat.controller.js";
 
 
 
@@ -30,6 +30,17 @@ chatRouter.get("/", authUser, getChats);
 @note: Returns all user and AI messages belonging to the specified chat. Only the chat owner can access the messages.
 */
 chatRouter.get("/:chatId/messages", authUser, getMessages);
+
+
+/*
+@description: Delete a chat conversation
+@route: DELETE /api/chats/delete/:chatId
+@access: Private
+@note: Deletes the specified chat along with all associated messages. Only the authenticated owner of the chat is authorized to perform this action.
+*/
+chatRouter.delete("/delete/:chatId", authUser, deleteChat);
+
+
 
 
 
