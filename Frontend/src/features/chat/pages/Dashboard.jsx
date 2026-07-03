@@ -43,7 +43,7 @@ bg-[size:50px_50px] text-white">
         <aside className="flex w-full max-w-[320px] flex-col gap-5 rounded-[32px] border border-white/10 bg-[#120F28]/85 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Perplexity</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Nexora</p>
               <h1 className="mt-3 text-2xl font-semibold text-white">Chats</h1>
             </div>
             <button className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/25 hover:bg-white/10">
