@@ -40,13 +40,13 @@ const Dashboard = () => {
 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]
 bg-[size:50px_50px] text-white">
       <div className="mx-auto flex min-h-screen max-w-[1600px] gap-6 px-4 py-6 sm:px-6">
-        <aside className="flex w-full max-w-[320px] flex-col gap-5 rounded-[32px] border border-white/10 bg-[#120F28]/85 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <aside className="flex w-full max-w-[320px] flex-col gap-5 rounded-[32px] bg-[#120F28]/85 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.45)] backdrop-blur-xl">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Nexora</p>
               <h1 className="mt-3 text-2xl font-semibold text-white">Chats</h1>
             </div>
-            <button className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/25 hover:bg-white/10">
+            <button className="rounded-full  bg-white/5 px-4 py-2 text-xs font-semibold text-slate-100 transition hover:border-white/25 hover:bg-white/10">
               + New
             </button>
           </div>
@@ -56,9 +56,9 @@ bg-[size:50px_50px] text-white">
               <button
                 key={title}
                 onClick={() => setSelectedChat(title)}
-                className={`w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${selectedChat === title
-                  ? 'border-white/20 bg-white/10 text-white'
-                  : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10'
+                className={`w-full rounded-2xl  px-4 py-3 text-left text-sm transition ${selectedChat === title
+                  ? ' bg-white/10 text-white'
+                  : ' bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10'
                   }`}
               >
                 {title}
@@ -66,14 +66,14 @@ bg-[size:50px_50px] text-white">
             ))}
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+          <div className="rounded-[28px] bg-white/5 p-4 text-sm text-slate-300">
             <p className="font-medium text-slate-100">Logged in as</p>
             <p className="mt-2 truncate text-base text-white">{user?.name ?? 'Guest user'}</p>
           </div>
         </aside>
 
         <section className="flex flex-1 flex-col gap-6">
-          <div className="rounded-[32px] border border-white/10 bg-slate-950/70 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+          <div className="rounded-[32px] border border-white/10  bg-slate-950/70 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.35)] backdrop-blur-xl">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.35em] text-slate-400">Conversation</p>
@@ -94,7 +94,7 @@ bg-[size:50px_50px] text-white">
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-3xl px-5 py-4 text-sm leading-6 shadow-[0_10px_30px_rgba(0,0,0,0.2)] ${message.role === 'user'
+                      className={`max-w-[80%] w-fit rounded-3xl px-5 py-4 text-sm leading-6 shadow-[0_10px_30px_rgba(0,0,0,0.2)] ${message.role === 'user'
                         ? 'bg-white/15 text-white'
                         : 'bg-white/5 text-slate-100'
                         }`}
@@ -105,7 +105,7 @@ bg-[size:50px_50px] text-white">
                 ))}
               </div>
 
-              <div className="mt-4 rounded-[28px] border border-white/10 bg-slate-900/80 p-4">
+              <div className="mt-4 rounded-[28px]  bg-slate-900/80 p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <input
                     type="text"
