@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
+import ReactMarkdown from 'react-markdown';
 import { useChat } from '../hooks/useChat.js';
 
 const chatss = [
@@ -28,7 +29,7 @@ const Dashboard = () => {
     chat.initSocketConnection();
   }, []);
 
-  const handleSubmitMessage = (e) => { 
+  const handleSubmitMessage = (e) => {
     e.preventDefault();
     const trimmedMessage = chatInput.trim();
     if (!trimmedMessage) return;
@@ -106,7 +107,19 @@ bg-[size:50px_50px] text-white">
                         : 'bg-white/5 text-slate-100'
                         }`}
                     >
-                      {message.content}
+                      <div className="prose prose-invert max-w-none break-words text-inherit">
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => <p className="mb-2 last:mb-0 whitespace-pre-wrap">{children}</p>,
+                            ul: ({ children }) => <ul className="mb-2 list-disc pl-5">{children}</ul>,
+                            ol: ({ children }) => <ol className="mb-2 list-decimal pl-5">{children}</ol>,
+                            code: ({ children }) => <code className="rounded bg-black/20 px-1 py-0.5 font-mono text-[0.9em]">{children}</code>,
+                            pre: ({ children }) => <pre className="my-2 overflow-x-auto rounded-xl bg-black/20 p-3">{children}</pre>,
+                          }}
+                        >
+                          {String(message.content ?? '')}
+                        </ReactMarkdown>
+                      </div>
                     </div>
                   </div>
                 ))}
