@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { useChat } from '../hooks/useChat.js';
 
-const chats = [
+const chatss = [
   'Personal assistant',
   'Project planner',
   'Daily reminders',
@@ -11,29 +11,36 @@ const chats = [
   'Ask anything',
 ];
 
-const messages = [
-  {
-    role: 'assistant',
-    text: 'Hello! I’m your AI assistant. What can I help you with today?',
-  },
-  {
-    role: 'user',
-    text: 'Show me a quick summary of the latest design system updates.',
-  },
-  {
-    role: 'assistant',
-    text: 'Sure! The latest update includes improved dark mode support, faster component loading, and a new responsive grid layout.',
-  },
-];
+
 
 const Dashboard = () => {
   const chat = useChat();
-  const { user } = useSelector((state) => state.auth);
-  const [selectedChat, setSelectedChat] = useState(chats[0]);
+  const [selectedChat, setSelectedChat] = useState(chatss[0]);
+  const [chatInput, setChatInput] = useState("");
+  const user = useSelector((state) => state.auth.user);
 
+  const chats = useSelector((state) => state.chat.chats);
+  const currentChatId = useSelector((state) => state.chat.currentChatId);
+
+  console.log("chats:", chats);
+  console.log("currentChatId:", currentChatId);
   useEffect(() => {
     chat.initSocketConnection();
-  }, [chat]);
+  }, []);
+
+  const handleSubmitMessage = (e) => { 
+    e.preventDefault();
+    const trimmedMessage = chatInput.trim();
+    if (!trimmedMessage) return;
+
+    console.log("Payload:", {
+      message: trimmedMessage,
+      chatId: currentChatId,
+    });
+
+    chat.handleSendMesage({ message: trimmedMessage, chatId: currentChatId });
+    setChatInput("");
+  };
 
   return (
     <main className="min-h-screen w-full bg-[#0F0A1F]
@@ -52,7 +59,7 @@ bg-[size:50px_50px] text-white">
           </div>
 
           <div className="flex flex-col gap-3 overflow-hidden rounded-[28px] bg-[#110A24]/80 p-3">
-            {chats.map((title) => (
+            {chatss.map((title) => (
               <button
                 key={title}
                 onClick={() => setSelectedChat(title)}
@@ -88,7 +95,7 @@ bg-[size:50px_50px] text-white">
           <div className="flex-1 overflow-hidden rounded-[32px] border border-white/10 bg-slate-950/80 shadow-[0_30px_90px_rgba(0,0,0,0.35)] backdrop-blur-xl">
             <div className="flex h-full flex-col p-6">
               <div className="flex-1 space-y-4 overflow-y-auto pr-2 pb-4">
-                {messages.map((message, index) => (
+                {chats[currentChatId]?.messages.map((message, index) => (
                   <div
                     key={index}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -99,23 +106,28 @@ bg-[size:50px_50px] text-white">
                         : 'bg-white/5 text-slate-100'
                         }`}
                     >
-                      {message.text}
+                      {message.content}
                     </div>
                   </div>
                 ))}
               </div>
 
               <div className="mt-4 rounded-[28px]  bg-slate-900/80 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <form onSubmit={handleSubmitMessage} className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <input
                     type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
                     placeholder="Type a prompt..."
                     className="flex-1 rounded-3xl border border-white/10 bg-[#110A24]/80 px-4 py-4 text-sm text-white outline-none placeholder:text-slate-500 transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                   />
-                  <button className="inline-flex shrink-0 items-center justify-center rounded-3xl bg-white/10 px-6 py-4 text-sm font-semibold text-white transition hover:bg-white/15">
+                  <button
+                    type='submit'
+                    disabled={!chatInput.trim()}
+                    className="inline-flex shrink-0 items-center justify-center rounded-3xl bg-white/10 px-6 py-4 text-sm font-semibold text-white transition hover:bg-white/15">
                     Send
                   </button>
-                </div>
+                </form>
                 <p className="mt-2 text-xs text-slate-500">Tip: Ask anything from planning to code review.</p>
               </div>
             </div>
