@@ -3,30 +3,22 @@ import { useSelector } from 'react-redux';
 import ReactMarkdown from 'react-markdown';
 import { useChat } from '../hooks/useChat.js';
 
-const chatss = [
-  'Personal assistant',
-  'Project planner',
-  'Daily reminders',
-  'Research notes',
-  'Code review',
-  'Ask anything',
-];
 
 
 
 const Dashboard = () => {
   const chat = useChat();
-  const [selectedChat, setSelectedChat] = useState(chatss[0]);
   const [chatInput, setChatInput] = useState("");
   const user = useSelector((state) => state.auth.user);
-
+  
   const chats = useSelector((state) => state.chat.chats);
   const currentChatId = useSelector((state) => state.chat.currentChatId);
-
-  console.log("chats:", chats);
-  console.log("currentChatId:", currentChatId);
+  const [selectedChat, setSelectedChat] = useState(chats[0]?.title || "Select a chat");
+  
+ 
   useEffect(() => {
     chat.initSocketConnection();
+    chat.handleGetChats();
   }, []);
 
   const handleSubmitMessage = (e) => {
@@ -34,13 +26,12 @@ const Dashboard = () => {
     const trimmedMessage = chatInput.trim();
     if (!trimmedMessage) return;
 
-    console.log("Payload:", {
-      message: trimmedMessage,
-      chatId: currentChatId,
-    });
-
     chat.handleSendMesage({ message: trimmedMessage, chatId: currentChatId });
     setChatInput("");
+  };
+
+  const openChat = (chatId) => { 
+    chat.handleOpenChat(chatId);
   };
 
   return (
@@ -60,16 +51,15 @@ bg-[size:50px_50px] text-white">
           </div>
 
           <div className="flex flex-col gap-3 overflow-hidden rounded-[28px] bg-[#110A24]/80 p-3">
-            {chatss.map((title) => (
+            {Object.values(chats).map((chat,index) => (
               <button
-                key={title}
-                onClick={() => setSelectedChat(title)}
-                className={`w-full rounded-2xl  px-4 py-3 text-left text-sm transition ${selectedChat === title
-                  ? ' bg-white/10 text-white'
-                  : ' bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10'
+                key={index}
+                onClick={() => openChat(chat.id)}
+                className={`w-full rounded-2xl  px-4 py-3 text-left text-sm transition 
+                   bg-white/5 text-slate-200 hover:border-white/20 hover:bg-white/10
                   }`}
               >
-                {title}
+                {chat.title}
               </button>
             ))}
           </div>
