@@ -7,14 +7,24 @@ import { generateResponse, generateTitle } from "../services/ai.service.js";
 
 
 export const sendMessage = async (req, res) => {
-    const { message, chat: chatId } = req.body;
-
+    const { message, chatId } = req.body;
 
     let title = null, chat = null;
 
-    if (!chatId) {
+    // Existing chat
+    if (chatId) {
+        chat = await chatModel.findById(chatId);
 
-        title = await generateTitle(message);
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: "Chat not found"
+            });
+        }
+    }
+    // New chat
+    else {
+        const title = await generateTitle(message);
 
         chat = await chatModel.create({
             user: req.user.id,
@@ -22,7 +32,8 @@ export const sendMessage = async (req, res) => {
         });
     };
 
-    const currentChatId = chatId || chat.id;
+    const currentChatId = chatId || chat._id;
+
 
     const userMessage = await messageModel.create({
         chat: currentChatId,
