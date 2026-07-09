@@ -56,7 +56,7 @@ const Dashboard = () => {
         tertiary: '#94A3B8',
       },
       components: {
-        sidebar: 'bg-white/90 backdrop-blur-xl border border-slate-200',
+        sidebar: 'bg-white/90 ',
         chatArea: '',
         input: 'bg-white border-slate-300 focus:border-[#2563EB] focus:ring-[#2563EB]/10',
         chatBubble: 'bg-[#2563EB]/10',
@@ -184,7 +184,7 @@ const Dashboard = () => {
                         backgroundColor: message.role === 'user' ? (isDarkMode ? 'rgba(37, 99, 235, 0.2)' : 'rgba(37, 99, 235, 0.1)') : 'transparent',
                         color: currentTheme.text.primary
                       }}
-                      className={`max-w-[90%] sm:max-w-[80%] md:max-w-[70%] w-fit rounded-3xl px-4 py-3 sm:px-5 sm:py-4 text-xs sm:text-sm leading-5 sm:leading-6 shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-colors duration-300`}
+                      className={`max-w-[90%] sm:max-w-[80%] md:max-w-[70%] w-fit rounded-3xl px-4 py-3 sm:px-5 sm:py-4 text-xs sm:text-sm leading-5 sm:leading-6  transition-colors duration-300`}
                     >
                       <div className="max-w-none break-words text-inherit">
                         <ReactMarkdown
