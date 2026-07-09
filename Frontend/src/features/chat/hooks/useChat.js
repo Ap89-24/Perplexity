@@ -11,25 +11,34 @@ export const useChat = () => {
 
     const handleSendMesage = async ({ message, chatId }) => { 
         dispatch(setIsLoading(true));
+
         const data = await sendMessage({ message, chatId });
         const { chat, AiMessages } = data;
-        dispatch(createNewChat({
-            chatId: chat._id,
-            title: chat.title
-        }));
+        const activeChatId = chat._id;
+
+        if (!chatId) {
+            dispatch(createNewChat({
+                chatId: activeChatId,
+                title: chat.title
+            }));
+            
+            dispatch(setCurrentChatId(chat._id));
+        };
 
         dispatch(addNewMessage({
-            chatId: chat._id,
+            chatId: activeChatId,
             content: message,
             role: "user"
         }));
 
         dispatch(addNewMessage({
-            chatId: chat._id,
+            chatId: activeChatId,
             content: AiMessages.content,
             role: "AI"
         }));
-        dispatch(setCurrentChatId(chat._id));
+
+        dispatch(setIsLoading(false));
+       
     };
 
     const handleGetChats = async () => { 
