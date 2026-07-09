@@ -25,7 +25,7 @@ const chatSlice = createSlice({
         },
         addMessages: (state, action) => { 
             const { chatId, messages } = action.payload
-            state.chats[chatId].messages.push(...messages)
+            state.chats[chatId].messages = messages
         },
         setChats: (state, action) => {
             state.chats = action.payload
