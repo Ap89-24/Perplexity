@@ -2,17 +2,20 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import ReactMarkdown from 'react-markdown';
 import { useChat } from '../hooks/useChat.js';
+import remarkGfm from 'remark-gfm'
+import { useAuth } from '../../auth/hooks/useAuth.js';
 
 
 
 
 const Dashboard = () => {
   const chat = useChat();
+  const auth = useAuth();
   const [chatInput, setChatInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const user = useSelector((state) => state.auth.user);
-
+  console.log("Redux User:", user);
   const chats = useSelector((state) => state.chat.chats);
   const currentChatId = useSelector((state) => state.chat.currentChatId);
   const [selectedChat, setSelectedChat] = useState(chats[0]?.title || "Select a chat");
@@ -136,7 +139,19 @@ const Dashboard = () => {
 
           <div className={`rounded-[28px] ${isDarkMode ? 'bg-[#10B981]/15' : 'bg-[#10B981]/10'} p-4 text-sm`}>
             <p style={{ color: currentTheme.text.primary }} className="font-medium">Logged in as</p>
-            <p style={{ color: currentTheme.text.primary }} className="mt-2 truncate text-base">{user?.name ?? 'Guest user'}</p>
+            <p
+              style={{ color: currentTheme.text.primary }}
+              className="mt-2 text-base font-semibold"
+            >
+              {user?.username || "Guest User"}
+            </p>
+
+            <p
+              style={{ color: currentTheme.text.secondary }}
+              className="truncate text-xs"
+            >
+              {user?.email}
+            </p>
           </div>
         </aside>
 
@@ -195,6 +210,7 @@ const Dashboard = () => {
                             code: ({ children }) => <code style={{ backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(226, 232, 240, 0.8)', color: '#10B981' }} className="rounded px-1 py-0.5 font-mono text-[0.9em]">{children}</code>,
                             pre: ({ children }) => <pre style={{ backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(226, 232, 240, 0.8)' }} className="my-2 overflow-x-auto rounded-xl p-3">{children}</pre>,
                           }}
+                          remarkPlugins={[remarkGfm]}
                         >
                           {String(message.content ?? '')}
                         </ReactMarkdown>
