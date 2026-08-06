@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../../context/ThemeContext';
+import ThemeToggle from '../../../components/ThemeToggle';
 import { Link } from 'react-router-dom';
 import { Navigate, useNavigate } from 'react-router';
 import { useAuth } from '../hooks/useAuth.js';
@@ -7,7 +8,7 @@ import { useSelector } from 'react-redux';
 
 
 const Login = () => {
-    const { isDark, toggleTheme } = useTheme();
+    const { isDark } = useTheme(); // used for error/checkbox styling
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -45,63 +46,25 @@ const Login = () => {
     };
 
     return (
-        <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${isDark
-            ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'
-            : 'bg-gradient-to-br from-purple-50 via-fuchsia-50 to-purple-100'
-            }`}>
-            {/* Background animated elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-300 ${isDark
-                    ? 'bg-fuchsia-500/20'
-                    : 'bg-fuchsia-400/30'
-                    }`}></div>
-                <div className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl transition-colors duration-300 ${isDark
-                    ? 'bg-purple-500/20'
-                    : 'bg-purple-400/30'
-                    }`}></div>
+        <div className="auth-shell relative flex min-h-screen items-center justify-center px-4">
+            <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+                <ThemeToggle compact />
             </div>
 
-            {/* Theme Toggle Button */}
-            <button
-                onClick={toggleTheme}
-                className={`absolute top-1 right-4 sm:top-6 sm:right-6 p-2 rounded-full transition-all duration-300 ${isDark
-                    ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 shadow-lg'
-                    }`}
-                title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-                {isDark ? (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zm5.657-9.193a1 1 0 00-1.414 0l-.707.707A1 1 0 005.05 6.464l.707-.707a1 1 0 001.414-1.414zM5 8a1 1 0 100-2H4a1 1 0 100 2h1z" clipRule="evenodd" />
-                    </svg>
-                ) : (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                    </svg>
-                )}
-            </button>
-
-            {/* Login Card */}
-            <div className="relative z-10 w-full max-w-md px-6 sm:px-8">
-                <div className={`rounded-2xl backdrop-blur-xl transition-all duration-300 ${isDark
-                    ? 'bg-slate-800/50 border border-slate-700/50 shadow-2xl shadow-slate-900/50'
-                    : 'bg-white/80 border border-white/60 shadow-2xl shadow-purple-500/10'
-                    }`}>
-                    {/* Header */}
-                    <div className="px-6 sm:px-8 pt-8 pb-6 text-center border-b border-opacity-20 border-slate-400">
-                        <div className={`w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-fuchsia-400 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/50`}>
-                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-full max-w-[400px]">
+                <div className="auth-card rounded-2xl shadow-sm">
+                    <div className="border-b chat-border px-8 pt-8 pb-6 text-center">
+                        <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--chat-accent)] text-white">
+                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
-                        <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'
-                            }`}>Welcome Back</h2>
-                        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                        <h2 className="text-2xl font-semibold tracking-tight">Welcome back</h2>
+                        <p className="mt-2 text-sm chat-text-secondary">
                             Registration successful! Please check your email to verify your account.
                         </p>
-                        <br />
-                        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                            Then Login to your Nexora account
+                        <p className="mt-1 text-sm chat-text-secondary">
+                            Then log in to your Nexora account
                         </p>
                     </div>
 
@@ -119,8 +82,7 @@ const Login = () => {
 
                         {/* Email Field */}
                         <div>
-                            <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'
-                                }`}>
+                            <label className="mb-2 block text-sm font-medium chat-text-secondary">
                                 Email Address
                             </label>
                             <input
@@ -130,17 +92,13 @@ const Login = () => {
                                 onChange={handleChange}
                                 placeholder="you@example.com"
                                 required
-                                className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border outline-none focus:ring-2 ${isDark
-                                    ? 'bg-slate-700/50 border-slate-600 text-white placeholder-slate-500 focus:border-fuchsia-500 focus:ring-fuchsia-500/20'
-                                    : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-fuchsia-500 focus:ring-fuchsia-500/20'
-                                    }`}
+                                className="auth-input w-full rounded-lg px-4 py-3 text-sm transition-colors"
                             />
                         </div>
 
                         {/* Password Field */}
                         <div>
-                            <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'
-                                }`}>
+                            <label className="mb-2 block text-sm font-medium chat-text-secondary">
                                 Password
                             </label>
                             <div className="relative">
@@ -151,16 +109,12 @@ const Login = () => {
                                     onChange={handleChange}
                                     placeholder="••••••••"
                                     required
-                                    className={`w-full px-4 py-3 rounded-lg transition-all duration-300 border outline-none focus:ring-2 pr-12 ${isDark
-                                        ? 'bg-slate-700/50 border-slate-600 text-white placeholder-slate-500 focus:border-purple-500 focus:ring-purple-500/20'
-                                        : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:ring-purple-500/20'
-                                        }`}
+                                    className="auth-input w-full rounded-lg px-4 py-3 pr-12 text-sm transition-colors"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className={`absolute right-3 top-3 transition-colors duration-300 ${isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700'
-                                        }`}
+                                    className="absolute right-3 top-3 chat-text-muted transition-opacity hover:opacity-70"
                                 >
                                     {showPassword ? (
                                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -181,16 +135,13 @@ const Login = () => {
                             <label className="flex items-center cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    className={`w-4 h-4 rounded border-2 transition-colors duration-300 ${isDark
-                                        ? 'border-slate-600 bg-slate-700 accent-fuchsia-500'
-                                        : 'border-slate-300 bg-white accent-fuchsia-500'
-                                        }`}
+                                    className="h-4 w-4 rounded border chat-border accent-[var(--chat-accent)]"
                                 />
-                                <span className={`ml-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                                <span className="ml-2 chat-text-secondary">
                                     Remember me
                                 </span>
                             </label>
-                            <a href="#" className="text-fuchsia-500 hover:text-fuchsia-400 font-medium transition-colors duration-300">
+                            <a href="#" className="font-medium text-[var(--chat-accent)] hover:opacity-80 transition-opacity">
                                 Forgot password?
                             </a>
                         </div>
@@ -199,9 +150,9 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full py-3 rounded-lg font-bold text-white transition-all duration-300 flex items-center justify-center gap-2 ${loading
-                                ? 'bg-slate-500 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-fuchsia-500 to-purple-500 hover:shadow-lg hover:shadow-fuchsia-500/30 active:scale-95'
+                            className={`flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold text-white transition-all ${loading
+                                ? 'cursor-not-allowed bg-[var(--chat-text-muted)]'
+                                : 'bg-[var(--chat-accent)] hover:opacity-90 active:scale-[0.98]'
                                 }`}
                         >
                             {loading ? (
@@ -220,22 +171,17 @@ const Login = () => {
                     </form>
 
                     {/* Footer */}
-                    <div className={`px-6 sm:px-8 py-6 border-t border-opacity-20 border-slate-400 text-center ${isDark ? 'bg-slate-900/30' : 'bg-slate-50/50'
-                        }`}>
-                        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    <div className="border-t chat-border px-8 py-5 text-center">
+                        <p className="text-sm chat-text-secondary">
                             Don't have an account?{' '}
-                            <Link
-                                to="/register"
-                                className="text-fuchsia-500 hover:text-fuchsia-400 font-bold transition-colors duration-300"
-                            >
-                                Sign up here
+                            <Link to="/register" className="font-semibold text-[var(--chat-accent)] hover:opacity-80">
+                                Sign up
                             </Link>
                         </p>
                     </div>
                 </div>
 
-                {/* Bottom text */}
-                <p className={`text-center mt-6 text-xs ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                <p className="mt-5 text-center text-xs chat-text-muted">
                     By logging in, you agree to our Terms of Service and Privacy Policy
                 </p>
             </div>

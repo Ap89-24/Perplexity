@@ -1,13 +1,227 @@
 @import "tailwindcss";
 
+:root {
+    --chat-bg: #ffffff;
+    --chat-sidebar: #f7f7f8;
+    --chat-surface: #ffffff;
+    --chat-border: #e5e5e5;
+    --chat-text: #0d0d0d;
+    --chat-text-secondary: #6e6e80;
+    --chat-text-muted: #8e8ea0;
+    --chat-hover: #ececf1;
+    --chat-active: #e3e3e8;
+    --chat-user-bubble: #f4f4f4;
+    --chat-input-bg: #ffffff;
+    --chat-input-border: #d9d9e3;
+    --chat-code-bg: #f6f8fa;
+    --chat-accent: #10a37f;
+}
+
+.dark {
+    --chat-bg: #212121;
+    --chat-sidebar: #171717;
+    --chat-surface: #212121;
+    --chat-border: #2f2f2f;
+    --chat-text: #ececec;
+    --chat-text-secondary: #b4b4b4;
+    --chat-text-muted: #8e8e8e;
+    --chat-hover: #2f2f2f;
+    --chat-active: #343434;
+    --chat-user-bubble: #303030;
+    --chat-input-bg: #2f2f2f;
+    --chat-input-border: #565869;
+    --chat-code-bg: #1a1a1a;
+    --chat-accent: #10a37f;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
 html,
 body,
 #root {
-    font-family: "Cabinet Grotesk", sans-serif;
-    background: #09090B;
-    color: #FAFAFA;
+    font-family: "Cabinet Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--chat-bg);
+    color: var(--chat-text);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.messages::-webkit-scrollbar{
-    display: none;
+::selection {
+    background: rgba(16, 163, 127, 0.25);
+    color: inherit;
+}
+
+/* ── Chat layout tokens ── */
+.chat-shell {
+    background: var(--chat-bg);
+    color: var(--chat-text);
+}
+
+.chat-sidebar {
+    background: var(--chat-sidebar);
+    border-color: var(--chat-border);
+}
+
+.chat-border {
+    border-color: var(--chat-border);
+}
+
+.chat-text-secondary {
+    color: var(--chat-text-secondary);
+}
+
+.chat-text-muted {
+    color: var(--chat-text-muted);
+}
+
+.chat-hover:hover {
+    background: var(--chat-hover);
+}
+
+.chat-item-active {
+    background: var(--chat-active);
+}
+
+.chat-user-bubble {
+    background: var(--chat-user-bubble);
+}
+
+/* ── Composer (ChatGPT-style input bar) ── */
+.chat-composer {
+    background: var(--chat-input-bg);
+    border: 1px solid var(--chat-input-border);
+    box-shadow:
+        0 0 0 0 transparent,
+        0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dark .chat-composer {
+    box-shadow:
+        0 0 0 0 transparent,
+        0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.chat-composer:focus-within {
+    border-color: var(--chat-accent);
+    box-shadow:
+        0 0 0 1px var(--chat-accent),
+        0 2px 12px rgba(16, 163, 127, 0.08);
+}
+
+/* ── Markdown prose inside messages ── */
+.chat-prose {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--chat-text);
+}
+
+.chat-prose p {
+    margin-bottom: 0.75rem;
+}
+
+.chat-prose p:last-child {
+    margin-bottom: 0;
+}
+
+.chat-prose h1,
+.chat-prose h2,
+.chat-prose h3 {
+    font-weight: 600;
+    margin: 1.25rem 0 0.5rem;
+    line-height: 1.35;
+}
+
+.chat-prose h1 { font-size: 1.375rem; }
+.chat-prose h2 { font-size: 1.2rem; }
+.chat-prose h3 { font-size: 1.05rem; }
+
+.chat-prose ul,
+.chat-prose ol {
+    margin: 0.5rem 0 0.75rem;
+    padding-left: 1.5rem;
+}
+
+.chat-prose li {
+    margin-bottom: 0.25rem;
+}
+
+.chat-prose a {
+    color: var(--chat-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.chat-prose code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 0.85em;
+    background: var(--chat-code-bg);
+    border: 1px solid var(--chat-border);
+    border-radius: 5px;
+    padding: 0.15em 0.4em;
+}
+
+.chat-prose pre {
+    margin: 0.75rem 0;
+    padding: 1rem;
+    background: var(--chat-code-bg);
+    border: 1px solid var(--chat-border);
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.chat-prose pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+}
+
+.chat-prose blockquote {
+    border-left: 3px solid var(--chat-border);
+    padding-left: 1rem;
+    margin: 0.75rem 0;
+    color: var(--chat-text-secondary);
+}
+
+/* ── Scrollbar ── */
+.chat-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+    background: var(--chat-border);
+    border-radius: 999px;
+}
+
+/* ── Auth pages (clean, not mesh-heavy) ── */
+.auth-shell {
+    background: var(--chat-bg);
+}
+
+.auth-card {
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-border);
+}
+
+.auth-input {
+    background: var(--chat-input-bg);
+    border: 1px solid var(--chat-input-border);
+    color: var(--chat-text);
+}
+
+.chat-composer textarea::placeholder {
+    color: var(--chat-text-muted);
+}
+
+.chat-composer textarea {
+    color: var(--chat-text);
 }

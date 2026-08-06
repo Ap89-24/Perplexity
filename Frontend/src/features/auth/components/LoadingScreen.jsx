@@ -1,18 +1,13 @@
 export default function LoadingScreen() {
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white">
+        <div className="chat-shell flex min-h-screen flex-col items-center justify-center">
             <div className="relative">
-                <div className="h-16 w-16 rounded-full border-4 border-gray-700"></div>
-                <div className="absolute top-0 left-0 h-16 w-16 animate-spin rounded-full border-4 border-transparent border-t-purple-500 border-r-cyan-500"></div>
+                <div className="h-10 w-10 rounded-full border-2 chat-border" />
+                <div className="absolute left-0 top-0 h-10 w-10 animate-spin rounded-full border-2 border-transparent border-t-[var(--chat-accent)]" />
             </div>
 
-            <h2 className="mt-6 text-xl font-semibold">
-                Loading...
-            </h2>
-
-            <p className="mt-2 text-sm text-gray-400">
-                Please wait while we prepare everything
-            </p>
+            <h2 className="mt-5 text-[15px] font-medium">Loading Nexora</h2>
+            <p className="mt-1 text-sm chat-text-muted">Please wait while we prepare everything</p>
         </div>
     );
 }
