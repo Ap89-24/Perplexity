@@ -1,37 +1,37 @@
 @import "tailwindcss";
 
 :root {
-    --chat-bg: #ffffff;
-    --chat-sidebar: #f7f7f8;
+    --chat-bg: #f8fafc;
+    --chat-sidebar: #f1f5f9;
     --chat-surface: #ffffff;
-    --chat-border: #e5e5e5;
-    --chat-text: #0d0d0d;
-    --chat-text-secondary: #6e6e80;
-    --chat-text-muted: #8e8ea0;
-    --chat-hover: #ececf1;
-    --chat-active: #e3e3e8;
-    --chat-user-bubble: #f4f4f4;
+    --chat-border: #e2e8f0;
+    --chat-text: #0f172a;
+    --chat-text-secondary: #475569;
+    --chat-text-muted: #94a3b8;
+    --chat-hover: #e2e8f0;
+    --chat-active: #cbd5e1;
+    --chat-user-bubble: #f1f5f9;
     --chat-input-bg: #ffffff;
-    --chat-input-border: #d9d9e3;
-    --chat-code-bg: #f6f8fa;
-    --chat-accent: #10a37f;
+    --chat-input-border: #cbd5e1;
+    --chat-code-bg: #f1f5f9;
+    --chat-accent: #4f46e5;
 }
 
 .dark {
-    --chat-bg: #212121;
-    --chat-sidebar: #171717;
-    --chat-surface: #212121;
-    --chat-border: #2f2f2f;
-    --chat-text: #ececec;
-    --chat-text-secondary: #b4b4b4;
-    --chat-text-muted: #8e8e8e;
-    --chat-hover: #2f2f2f;
-    --chat-active: #343434;
-    --chat-user-bubble: #303030;
-    --chat-input-bg: #2f2f2f;
-    --chat-input-border: #565869;
-    --chat-code-bg: #1a1a1a;
-    --chat-accent: #10a37f;
+    --chat-bg: #0b0f19;
+    --chat-sidebar: #070a12;
+    --chat-surface: #0f172a;
+    --chat-border: #1e293b;
+    --chat-text: #f8fafc;
+    --chat-text-secondary: #94a3b8;
+    --chat-text-muted: #64748b;
+    --chat-hover: #1e293b;
+    --chat-active: #334155;
+    --chat-user-bubble: #1e293b;
+    --chat-input-bg: #0f172a;
+    --chat-input-border: #334155;
+    --chat-code-bg: #020617;
+    --chat-accent: #6366f1;
 }
 
 html {
@@ -89,27 +89,73 @@ body,
     background: var(--chat-user-bubble);
 }
 
-/* ── Composer (ChatGPT-style input bar) ── */
+/* ── Custom Micro-Animations & Sleek Touches ── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.glass-header {
+    background: rgba(7, 10, 18, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.suggestion-card {
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    background: var(--chat-surface);
+}
+
+.suggestion-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--chat-accent);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.18);
+}
+
+/* User Message Bubble Gradient */
+.chat-user-bubble {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.dark .chat-user-bubble {
+    background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ── Composer (Floating Input Bar) ── */
 .chat-composer {
     background: var(--chat-input-bg);
     border: 1px solid var(--chat-input-border);
-    box-shadow:
-        0 0 0 0 transparent,
-        0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark .chat-composer {
-    box-shadow:
-        0 0 0 0 transparent,
-        0 4px 16px rgba(0, 0, 0, 0.25);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45);
 }
 
 .chat-composer:focus-within {
     border-color: var(--chat-accent);
-    box-shadow:
-        0 0 0 1px var(--chat-accent),
-        0 2px 12px rgba(16, 163, 127, 0.08);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3), 0 12px 35px rgba(99, 102, 241, 0.18);
 }
 
 /* ── Markdown prose inside messages ── */
