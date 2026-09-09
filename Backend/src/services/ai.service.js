@@ -46,12 +46,14 @@ Always use this tool before answering those questions.`,
 );
 
 const agent = createAgent({
-  model: mistralModel,
+  model: geminiModel,
   tools: [searchInternetTool]
 });
 
 
-export const generateResponse = async (messages) => {
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const generateResponse = async (messages, onChunk) => {
   const formattedMessages = messages
     .map((msg) => {
       if (msg.role === "user") {
@@ -64,27 +66,87 @@ export const generateResponse = async (messages) => {
 
       return null;
     })
+    .filter(Boolean);
 
-  const response = await agent.invoke({
-    messages: [
-      new SystemMessage(`
-      You are a helpful and precise assistant.
+  const inputMessages = [
+    new SystemMessage(`
+      You are a helpful, engaging, and precise assistant.
+      Use relevant emojis in your responses to make them friendly, visually appealing, and engaging (e.g. 🏆, 🏏, 🚀, ✨, 💡).
+      Use clean Markdown formatting (bold text, lists, headers) where appropriate.
       If you don't know the answer, say you don't know.
-      If the question requires up-to-date information,
-      use the "searchInternet" tool.
+      If the question requires up-to-date information, use the "searchInternet" tool.
     `),
-      ...formattedMessages,
-    ],
-  });
+    ...formattedMessages,
+  ];
 
-  console.dir(response, { depth: null });
-  return response.messages[response.messages.length - 1].text;
+  let fullResponseText = "";
+
+  if (typeof onChunk === "function") {
+    try {
+      const eventStream = await agent.streamEvents(
+        { messages: inputMessages },
+        { version: "v2" }
+      );
+
+      for await (const event of eventStream) {
+        if (event.event === "on_chat_model_stream") {
+          const chunk = event.data?.chunk;
+          if (chunk) {
+            // Ignore tool call chunks
+            if (!chunk.tool_call_chunks || chunk.tool_call_chunks.length === 0) {
+              let text = "";
+              if (typeof chunk.text === "string" && chunk.text) {
+                text = chunk.text;
+              } else if (typeof chunk.content === "string" && chunk.content) {
+                text = chunk.content;
+              } else if (Array.isArray(chunk.content)) {
+                text = chunk.content
+                  .filter((part) => part.type === "text" && part.text)
+                  .map((part) => part.text)
+                  .join("");
+              }
+
+              if (text) {
+                fullResponseText += text;
+                if (text.length > 3) {
+                  for (const char of text) {
+                    await onChunk(char);
+                    await delay(15);
+                  }
+                } else {
+                  await onChunk(text);
+                  await delay(25);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error in LangChain streaming:", error);
+    }
+
+    if (!fullResponseText) {
+      const response = await agent.invoke({ messages: inputMessages });
+      const lastMsg = response.messages[response.messages.length - 1];
+      fullResponseText = typeof lastMsg.text === "string" ? lastMsg.text : (lastMsg.content || "");
+      if (fullResponseText) {
+        onChunk(fullResponseText);
+      }
+    }
+  } else {
+    const response = await agent.invoke({ messages: inputMessages });
+    const lastMsg = response.messages[response.messages.length - 1];
+    fullResponseText = typeof lastMsg.text === "string" ? lastMsg.text : (lastMsg.content || "");
+  }
+
+  return fullResponseText;
 };
 
 
 
 export const generateTitle = async (message) => {
-  const response = await mistralModel.invoke([
+  const response = await geminiModel.invoke([
     new SystemMessage(`
             You are a helpful assistant that generates concise and descriptive titles for chat conversations.
             

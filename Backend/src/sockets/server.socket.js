@@ -16,6 +16,12 @@ export const initSocket = (httpServer) => {
 
     io.on("connection", (socket) => {
         console.log("A user connected: " + socket.id);
+
+        socket.on("joinChat", (chatId) => {
+            if (chatId) {
+                socket.join(`chat_${chatId}`);
+            }
+        });
     })
 };
 

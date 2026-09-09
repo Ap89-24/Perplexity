@@ -1,6 +1,7 @@
 import chatModel from "../models/chat.model.js";
 import messageModel from "../models/message.model.js";
 import { generateResponse, generateTitle } from "../services/ai.service.js";
+import { getIO } from "../sockets/server.socket.js";
 
 
 
@@ -24,12 +25,26 @@ export const sendMessage = async (req, res) => {
     }
     // New chat
     else {
-        const title = await generateTitle(message);
+        title = await generateTitle(message);
 
         chat = await chatModel.create({
             user: req.user.id,
             title
         });
+
+        try {
+            const io = getIO();
+            io.emit("chatCreated", {
+                chat: {
+                    _id: chat._id.toString(),
+                    title: chat.title,
+                    user: chat.user
+                },
+                userMessage: message
+            });
+        } catch (err) {
+            console.error("Error emitting chatCreated:", err);
+        }
     };
 
     const currentChatId = chatId || chat._id;
@@ -43,7 +58,17 @@ export const sendMessage = async (req, res) => {
 
     const messages = await messageModel.find({ chat: currentChatId });
 
-    const result = await generateResponse(messages);
+    const result = await generateResponse(messages, async (chunk) => {
+        try {
+            const io = getIO();
+            io.emit("chatChunk", {
+                chatId: currentChatId.toString(),
+                chunk
+            });
+        } catch (err) {
+            console.error("Error emitting socket chunk:", err);
+        }
+    });
 
     const AiMessages = await messageModel.create({
         chat: currentChatId,

@@ -4,7 +4,10 @@ import http from "http";
 import app from "./src/app.js";
 import connectDB from "./src/config/db.js";
 import { initSocket } from "./src/sockets/server.socket.js";
+import dns from "dns";
 
+
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const httpServer = http.createServer(app);
 initSocket(httpServer);
