@@ -4,7 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import authRouter from "./routes/auth.route.js";
 import chatRouter from "./routes/chat.route.js";
-
+import documentRouter from "./routes/document.route.js";
 
 const app = express();
 
@@ -12,8 +12,8 @@ const app = express();
 /* 
 @description -> these all are middlewares.....
 */
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ limit: "15mb", extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(
@@ -37,6 +37,12 @@ app.use("/api/auth", authRouter);
 */
 
 app.use("/api/chats" , chatRouter);
+
+/* 
+@description -> Api's for documents (RAG)....
+*/
+
+app.use("/api/documents", documentRouter);
 
 
 

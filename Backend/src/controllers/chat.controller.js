@@ -8,7 +8,7 @@ import { getIO } from "../sockets/server.socket.js";
 
 
 export const sendMessage = async (req, res) => {
-    const { message, chatId } = req.body;
+    const { message, chatId, searchMode = "hybrid", selectedDocIds = [] } = req.body;
 
     let title = null, chat = null;
 
@@ -58,22 +58,48 @@ export const sendMessage = async (req, res) => {
 
     const messages = await messageModel.find({ chat: currentChatId });
 
-    const result = await generateResponse(messages, async (chunk) => {
-        try {
-            const io = getIO();
-            io.emit("chatChunk", {
-                chatId: currentChatId.toString(),
-                chunk
-            });
-        } catch (err) {
-            console.error("Error emitting socket chunk:", err);
+    let retrievedSources = [];
+
+    const result = await generateResponse(
+        messages,
+        async (chunk) => {
+            try {
+                const io = getIO();
+                io.emit("chatChunk", {
+                    chatId: currentChatId.toString(),
+                    chunk
+                });
+            } catch (err) {
+                console.error("Error emitting socket chunk:", err);
+            }
+        },
+        {
+            userId: req.user.id,
+            searchMode,
+            selectedDocIds,
+            onSources: async (sources) => {
+                retrievedSources = sources;
+                try {
+                    const io = getIO();
+                    io.emit("chatSources", {
+                        chatId: currentChatId.toString(),
+                        sources
+                    });
+                } catch (err) {
+                    console.error("Error emitting socket sources:", err);
+                }
+            }
         }
-    });
+    );
+
+    const aiTextContent = typeof result === "string" ? result : result.text;
+    const finalSources = (result && result.sources && result.sources.length > 0) ? result.sources : retrievedSources;
 
     const AiMessages = await messageModel.create({
         chat: currentChatId,
-        content: result,
-        role: "AI"
+        content: aiTextContent,
+        role: "AI",
+        sources: finalSources
     })
 
     return res.status(200).json({

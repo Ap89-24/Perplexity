@@ -2,80 +2,88 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMistralAI } from "@langchain/mistralai";
 import { AIMessage, HumanMessage, SystemMessage, tool, createAgent } from "langchain";
 import { internetSearch } from "./internet.service.js";
+import { getHybridContext } from "./rag.service.js";
 import * as z from "zod";
 
 const geminiModel = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash-lite",
-  apiKey: process.env.GEMINI_API_KEY
+  apiKey: process.env.GEMINI_API_KEY,
 });
-
 
 const mistralModel = new ChatMistralAI({
   model: "mistral-small-latest",
-  apiKey: process.env.MISTRAL_API_KEY
-})
+  apiKey: process.env.MISTRAL_API_KEY,
+});
 
-
-const searchInternetTool = tool(
-  internetSearch,
-  {
-    name: "searchInternet",
-    description: `Search the internet for current information.
-
-Use this tool whenever the question contains:
-
-      - latest
-      - today
-      - yesterday
-      - current
-      - news
-      - this week
-      - recent
-      - live
-      - update
-      - price
-      - election
-      - sports
-      - weather
-
-Always use this tool before answering those questions.`,
-    schema: z.object({
-      query: z.string().describe("The search query to look up on the internet.")
-    })
-  }
-);
+const searchInternetTool = tool(internetSearch, {
+  name: "searchInternet",
+  description: `Search the internet for current information.
+Use this tool whenever up-to-date information is needed.`,
+  schema: z.object({
+    query: z.string().describe("The search query to look up on the internet."),
+  }),
+});
 
 const agent = createAgent({
   model: geminiModel,
-  tools: [searchInternetTool]
+  tools: [searchInternetTool],
 });
-
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const generateResponse = async (messages, onChunk) => {
+export const generateResponse = async (messages, onChunk, options = {}) => {
+  const { userId, searchMode = "hybrid", selectedDocIds = [], onSources } = options;
+
+  // Retrieve last user message for Hybrid RAG context retrieval
+  const lastUserMsgObj = [...messages].reverse().find((m) => m.role === "user");
+  const lastUserQuery = lastUserMsgObj ? lastUserMsgObj.content : "";
+
+  let contextText = "";
+  let sources = [];
+
+  if (lastUserQuery) {
+    try {
+      const ragResult = await getHybridContext(lastUserQuery, userId, searchMode, selectedDocIds);
+      contextText = ragResult.contextText;
+      sources = ragResult.sources;
+
+      if (typeof onSources === "function" && sources.length > 0) {
+        await onSources(sources);
+      }
+    } catch (ragErr) {
+      console.error("Error retrieving Hybrid RAG context:", ragErr);
+    }
+  }
+
   const formattedMessages = messages
     .map((msg) => {
       if (msg.role === "user") {
         return new HumanMessage(msg.content);
-      }
-
-      else if (msg.role === "AI" || msg.role === "assistant") {
+      } else if (msg.role === "AI" || msg.role === "assistant") {
         return new AIMessage(msg.content);
       }
-
       return null;
     })
     .filter(Boolean);
 
+  let systemPromptText = `
+You are a helpful, engaging, and precise Perplexity AI assistant.
+Use relevant emojis in your responses to make them friendly, visually appealing, and engaging (e.g. 🏆, 🏏, 🚀, ✨, 💡, 📚).
+Use clean Markdown formatting (bold text, bullet points, headers) where appropriate.
+
+GROUNDING & CITATION RULES:
+1. Always base your response strictly on the provided Context Sources when relevant.
+2. For every piece of information taken from a source, add inline citation tags using bracket numbers matching the source id, like [1], [2], or [1][3].
+3. Make sure citations appear naturally at the end of relevant sentences or facts.
+4. If you don't know the answer or the context doesn't contain it, state what you know clearly.
+`;
+
+  if (contextText) {
+    systemPromptText += `\n\n=== RETRIEVED CONTEXT SOURCES (WEB & DOCUMENTS) ===\n${contextText}\n=================================================`;
+  }
+
   const inputMessages = [
-    new SystemMessage(`
-      You are a helpful, engaging, and precise assistant.
-      Use relevant emojis in your responses to make them friendly, visually appealing, and engaging (e.g. 🏆, 🏏, 🚀, ✨, 💡).
-      Use clean Markdown formatting (bold text, lists, headers) where appropriate.
-      If you don't know the answer, say you don't know.
-      If the question requires up-to-date information, use the "searchInternet" tool.
-    `),
+    new SystemMessage(systemPromptText),
     ...formattedMessages,
   ];
 
@@ -92,7 +100,6 @@ export const generateResponse = async (messages, onChunk) => {
         if (event.event === "on_chat_model_stream") {
           const chunk = event.data?.chunk;
           if (chunk) {
-            // Ignore tool call chunks
             if (!chunk.tool_call_chunks || chunk.tool_call_chunks.length === 0) {
               let text = "";
               if (typeof chunk.text === "string" && chunk.text) {
@@ -111,11 +118,11 @@ export const generateResponse = async (messages, onChunk) => {
                 if (text.length > 3) {
                   for (const char of text) {
                     await onChunk(char);
-                    await delay(15);
+                    await delay(12);
                   }
                 } else {
                   await onChunk(text);
-                  await delay(25);
+                  await delay(20);
                 }
               }
             }
@@ -140,23 +147,20 @@ export const generateResponse = async (messages, onChunk) => {
     fullResponseText = typeof lastMsg.text === "string" ? lastMsg.text : (lastMsg.content || "");
   }
 
-  return fullResponseText;
+  return {
+    text: fullResponseText,
+    sources,
+  };
 };
-
-
 
 export const generateTitle = async (message) => {
   const response = await geminiModel.invoke([
     new SystemMessage(`
-            You are a helpful assistant that generates concise and descriptive titles for chat conversations.
-            
-            User will provide you with the first message of a chat conversation, and you will generate a title that captures the essence of the conversation in 2-4 words. The title should be clear, relevant, and engaging, giving users a quick understanding of the chat's topic.    
-        `),
-    new HumanMessage(`Generate a title for a chat conversation based on the following first message: ${message}`
-    )
+You are a helpful assistant that generates concise and descriptive titles for chat conversations.
+User will provide you with the first message of a chat conversation, and you will generate a title that captures the essence of the conversation in 2-4 words. Clear, relevant, and engaging.
+    `),
+    new HumanMessage(`Generate a title for a chat conversation based on the following first message: ${message}`),
   ]);
 
   return response.text;
 };
-
-

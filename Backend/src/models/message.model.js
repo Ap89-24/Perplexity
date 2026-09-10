@@ -17,7 +17,16 @@ const messageSchema = new Schema({
     enum: ["user", "AI"],
     required: true,
     default: "user"
-  }
+  },
+  sources: [
+    {
+      id: Number,
+      title: String,
+      url: String,
+      snippet: String,
+      sourceType: { type: String, enum: ["web", "document"] }
+    }
+  ]
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
