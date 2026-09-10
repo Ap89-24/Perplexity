@@ -7,11 +7,13 @@ const api = axios.create({
 });
 
 
-export const sendMessage = async ({message, chatId}) => { 
+export const sendMessage = async ({ message, chatId, searchMode = "hybrid", selectedDocIds = [] }) => { 
     try {
         const response = await api.post("/api/chats/message", {
             message,
-            chatId
+            chatId,
+            searchMode,
+            selectedDocIds
         });
 
         return response.data;

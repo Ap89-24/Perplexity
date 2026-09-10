@@ -1,6 +1,6 @@
 import { initSocketConnection, joinChatRoom } from "../services/chat.socket.js";
 import { sendMessage, getChats, getMessages, deleteChat } from "../services/chat.api.js";
-import { setChats, setCurrentChatId, setIsLoading, setError, createNewChat, addNewMessage, appendStreamChunk, updateLastMessage, addMessages, removeChat } from "../chat.slice.js";
+import { setChats, setCurrentChatId, setIsLoading, setError, createNewChat, addNewMessage, setStreamSources, appendStreamChunk, updateLastMessage, addMessages, removeChat } from "../chat.slice.js";
 import { useDispatch } from "react-redux";
 
 
@@ -31,6 +31,9 @@ export const useChat = () => {
                     content: "",
                     role: "AI"
                 }));
+            },
+            ({ chatId, sources }) => {
+                dispatch(setStreamSources({ chatId, sources }));
             }
         );
     };
@@ -49,7 +52,7 @@ export const useChat = () => {
         }
     };
 
-    const handleSendMesage = async ({ message, chatId }) => { 
+    const handleSendMesage = async ({ message, chatId, searchMode = "hybrid", selectedDocIds = [] }) => { 
         dispatch(setIsLoading(true));
 
         if (chatId) {
@@ -66,7 +69,7 @@ export const useChat = () => {
             }));
         }
 
-        const data = await sendMessage({ message, chatId });
+        const data = await sendMessage({ message, chatId, searchMode, selectedDocIds });
         if (!data) {
             dispatch(setIsLoading(false));
             return;
@@ -87,13 +90,15 @@ export const useChat = () => {
             dispatch(updateLastMessage({
                 chatId: activeChatId,
                 content: AiMessages.content,
-                role: "AI"
+                role: "AI",
+                sources: AiMessages.sources
             }));
         } else {
             dispatch(updateLastMessage({
                 chatId: activeChatId,
                 content: AiMessages.content,
-                role: "AI"
+                role: "AI",
+                sources: AiMessages.sources
             }));
         }
 
@@ -127,7 +132,8 @@ export const useChat = () => {
 
             const formattedMessage = messages.map(msg => ({
                 content: msg.content,
-                role: msg.role
+                role: msg.role,
+                sources: msg.sources || []
             }));
             dispatch(addMessages({
                 chatId,

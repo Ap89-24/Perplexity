@@ -20,9 +20,18 @@ const chatSlice = createSlice({
             }
         },
         addNewMessage: (state, action) => {
-            const { chatId, content, role } = action.payload
+            const { chatId, content, role, sources = [] } = action.payload
             if (state.chats[chatId]) {
-                state.chats[chatId].messages.push({ content, role });
+                state.chats[chatId].messages.push({ content, role, sources });
+            }
+        },
+        setStreamSources: (state, action) => {
+            const { chatId, sources } = action.payload;
+            if (state.chats[chatId]) {
+                const messages = state.chats[chatId].messages;
+                if (messages.length > 0 && messages[messages.length - 1].role === "AI") {
+                    messages[messages.length - 1].sources = sources;
+                }
             }
         },
         appendStreamChunk: (state, action) => {
@@ -32,16 +41,17 @@ const chatSlice = createSlice({
                 if (messages.length > 0 && messages[messages.length - 1].role === "AI") {
                     messages[messages.length - 1].content += chunk;
                 } else {
-                    messages.push({ content: chunk, role: "AI" });
+                    messages.push({ content: chunk, role: "AI", sources: [] });
                 }
             }
         },
         updateLastMessage: (state, action) => {
-            const { chatId, content, role } = action.payload;
+            const { chatId, content, role, sources } = action.payload;
             if (state.chats[chatId]) {
                 const messages = state.chats[chatId].messages;
                 if (messages.length > 0) {
-                    messages[messages.length - 1] = { content, role };
+                    const existingSources = sources || messages[messages.length - 1].sources || [];
+                    messages[messages.length - 1] = { content, role, sources: existingSources };
                 }
             }
         },
@@ -74,5 +84,5 @@ const chatSlice = createSlice({
 });
 
 
-export const { setChats, setCurrentChatId, setIsLoading, setError, createNewChat, addNewMessage, appendStreamChunk, updateLastMessage, addMessages, removeChat } = chatSlice.actions;
+export const { setChats, setCurrentChatId, setIsLoading, setError, createNewChat, addNewMessage, setStreamSources, appendStreamChunk, updateLastMessage, addMessages, removeChat } = chatSlice.actions;
 export default chatSlice.reducer;

@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import ReactMarkdown from 'react-markdown';
 import { useChat } from '../hooks/useChat.js';
-import remarkGfm from 'remark-gfm'
+import remarkGfm from 'remark-gfm';
 import { useAuth } from '../../auth/hooks/useAuth.js';
 import ThemeToggle from '../../../components/ThemeToggle';
+import SourceCard from '../components/SourceCard.jsx';
+import DocumentUploadModal from '../components/DocumentUploadModal.jsx';
 
 const NexoraIcon = ({ className = 'h-5 w-5' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none">
@@ -96,6 +98,12 @@ const Dashboard = () => {
   const auth = useAuth();
   const [chatInput, setChatInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // RAG States
+  const [searchMode, setSearchMode] = useState("hybrid"); // "hybrid" | "web" | "document"
+  const [selectedDocIds, setSelectedDocIds] = useState([]);
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+
   const messagesEndRef = useRef(null);
   const user = useSelector((state) => state.auth.user);
   const chats = useSelector((state) => state.chat.chats);
@@ -119,7 +127,12 @@ const Dashboard = () => {
     const trimmedMessage = chatInput.trim();
     if (!trimmedMessage) return;
 
-    chat.handleSendMesage({ message: trimmedMessage, chatId: currentChatId });
+    chat.handleSendMesage({
+      message: trimmedMessage,
+      chatId: currentChatId,
+      searchMode,
+      selectedDocIds,
+    });
     setChatInput("");
   };
 
@@ -134,32 +147,44 @@ const Dashboard = () => {
   };
 
   const markdownComponents = {
-    p: ({ children }) => <p className="whitespace-pre-wrap">{children}</p>,
-    ul: ({ children }) => <ul className="list-disc leading-relaxed">{children}</ul>,
-    ol: ({ children }) => <ol className="list-decimal leading-relaxed">{children}</ol>,
+    p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc leading-relaxed pl-5 my-2">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal leading-relaxed pl-5 my-2">{children}</ol>,
     li: ({ children }) => <li className="my-1">{children}</li>,
-    a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+    a: ({ href, children }) => (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+        {children}
+      </a>
+    ),
     code: ({ children, className }) => {
       const isBlock = className?.includes('language-');
       if (isBlock) return <CodeBlock className={className}>{children}</CodeBlock>;
-      return <code className="rounded bg-[var(--chat-code-bg)] px-1.5 py-0.5 text-xs font-mono border chat-border">{children}</code>;
+      return <code className="rounded bg-[var(--chat-code-bg)] px-1.5 py-0.5 text-xs font-mono border chat-border text-emerald-300">{children}</code>;
     },
     pre: ({ children }) => <>{children}</>,
-    blockquote: ({ children }) => <blockquote>{children}</blockquote>,
-    h1: ({ children }) => <h1>{children}</h1>,
-    h2: ({ children }) => <h2>{children}</h2>,
-    h3: ({ children }) => <h3>{children}</h3>,
+    blockquote: ({ children }) => <blockquote className="border-l-2 border-emerald-500/50 pl-3 italic text-gray-400 my-2">{children}</blockquote>,
+    h1: ({ children }) => <h1 className="text-lg font-bold text-white mt-3 mb-1">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-base font-bold text-white mt-3 mb-1">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-sm font-semibold text-white mt-2 mb-1">{children}</h3>,
   };
 
   const suggestions = [
-    { label: 'Explain a complex topic', icon: '💡' },
-    { label: 'Help me write code', icon: '⚡' },
-    { label: 'Summarize a document', icon: '📄' },
-    { label: 'Plan a project', icon: '🎯' },
+    { label: 'What are the latest AI breakthroughs today?', icon: '🌐' },
+    { label: 'Search uploaded knowledge base documents', icon: '📄' },
+    { label: 'Explain Quantum Computing with citations', icon: '⚛️' },
+    { label: 'Compare MongoDB Atlas Vector Search vs Pinecone', icon: '🍃' },
   ];
 
   return (
     <div className="chat-shell flex h-screen overflow-hidden">
+      {/* Document Upload Modal */}
+      <DocumentUploadModal
+        isOpen={isDocModalOpen}
+        onClose={() => setIsDocModalOpen(false)}
+        selectedDocIds={selectedDocIds}
+        setSelectedDocIds={setSelectedDocIds}
+      />
+
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -176,28 +201,28 @@ const Dashboard = () => {
       >
         {/* Sidebar header */}
         <div className="flex items-center gap-2 px-3 pt-3 pb-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--chat-accent)] text-white shadow-sm">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-black shadow-sm font-bold">
             <NexoraIcon className="h-4 w-4" />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight">Nexora</span>
+          <span className="text-[15px] font-semibold tracking-tight text-white">Perplexity RAG</span>
         </div>
 
         {/* New chat */}
         <div className="px-2 pb-2">
           <button
             onClick={handleNewChat}
-            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 border border-indigo-500/30 text-indigo-200 transition-all hover:border-indigo-500/60 hover:text-white shadow-sm hover:shadow-indigo-500/10"
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-500/30 text-emerald-200 transition-all hover:border-emerald-500/60 hover:text-white shadow-sm"
           >
-            <svg className="h-4 w-4 text-indigo-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            New chat
+            New search
           </button>
         </div>
 
         {/* Chat history */}
         <div className="chat-scroll flex-1 overflow-y-auto px-2">
-          <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider chat-text-muted">Recent</p>
+          <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider chat-text-muted">Recent Searches</p>
           <div className="space-y-1">
             {Object.values(chats).map((chatItem) => {
               const isActive = chatItem.id === currentChatId;
@@ -206,10 +231,10 @@ const Dashboard = () => {
                   key={chatItem.id}
                   onClick={() => openChat(chatItem.id)}
                   className={`group flex cursor-pointer w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[13px] transition-all ${
-                    isActive ? 'bg-indigo-500/15 text-white font-medium border-l-2 border-indigo-500' : 'chat-text-secondary chat-hover'
+                    isActive ? 'bg-emerald-500/15 text-white font-medium border-l-2 border-emerald-500' : 'chat-text-secondary chat-hover'
                   }`}
                 >
-                  <svg className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-400 opacity-100' : 'opacity-50'}`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+                  <svg className={`h-4 w-4 shrink-0 ${isActive ? 'text-emerald-400 opacity-100' : 'opacity-50'}`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                   <span className="line-clamp-1 flex-1">{chatItem.title}</span>
@@ -231,7 +256,7 @@ const Dashboard = () => {
         {/* Sidebar footer */}
         <div className="border-t chat-border p-2">
           <div className="flex items-center gap-2 rounded-lg px-2 py-2 chat-hover">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-xs font-bold text-white shadow-sm">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-xs font-bold text-black shadow-sm">
               {(user?.username || 'G')[0].toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
@@ -243,8 +268,8 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* ── Main chat area ── */}
-      <div className="relative flex min-w-0 flex-1 flex-col bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/10 via-transparent to-transparent">
+      {/* ── Main search area ── */}
+      <div className="relative flex min-w-0 flex-1 flex-col bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/10 via-transparent to-transparent">
         {/* Top bar */}
         <header className="glass-header flex h-[52px] shrink-0 items-center gap-3 border-b chat-border px-4 z-10">
           <button
@@ -260,17 +285,17 @@ const Dashboard = () => {
             <h1 className="truncate text-[14px] font-semibold tracking-tight">{currentTitle}</h1>
             
             {isLoading ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/15 px-3 py-1 text-xs font-medium text-indigo-300 border border-indigo-500/30 animate-pulse shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300 border border-emerald-500/30 animate-pulse shadow-sm">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                Generating response...
+                RAG Vector Search & Synthesis...
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-[11px] font-medium text-indigo-300 border border-indigo-500/20">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                Nexora AI
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300 border border-emerald-500/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                MongoDB Atlas Vector RAG
               </span>
             )}
           </div>
@@ -285,21 +310,21 @@ const Dashboard = () => {
           {currentMessages.length === 0 ? (
             /* Minimal Empty State */
             <div className="flex h-full flex-col items-center justify-center px-4 pb-32 animate-fade-in-up">
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white shadow-xl shadow-indigo-500/25 ring-4 ring-indigo-500/10">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-black font-bold shadow-xl shadow-emerald-500/20 ring-4 ring-emerald-500/10">
                 <NexoraIcon className="h-8 w-8" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-center">How can I help you today?</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-center">Where knowledge begins</h2>
               <p className="mt-2 max-w-md text-center text-[14px] chat-text-secondary">
-                Ask anything — from brainstorming creative ideas to writing and debugging code.
+                Search real-time web sources and user uploaded documents powered by MongoDB Atlas Vector RAG.
               </p>
               <div className="mt-8 grid w-full max-w-lg grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {suggestions.map((sug) => (
                   <button
                     key={sug.label}
                     onClick={() => setChatInput(sug.label)}
-                    className="suggestion-card flex items-center gap-3 rounded-xl border chat-border px-4 py-3.5 text-left text-[13px] font-medium chat-text-secondary shadow-sm"
+                    className="suggestion-card flex items-center gap-3 rounded-xl border chat-border px-4 py-3.5 text-left text-[13px] font-medium chat-text-secondary shadow-sm hover:border-emerald-500/40"
                   >
-                    <span className="text-lg p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">{sug.icon}</span>
+                    <span className="text-lg p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">{sug.icon}</span>
                     <span>{sug.label}</span>
                   </button>
                 ))}
@@ -311,21 +336,41 @@ const Dashboard = () => {
                 message.role === 'user' ? (
                   /* User message */
                   <div key={index} className="mb-6 flex justify-end animate-fade-in-up">
-                    <div className="chat-user-bubble max-w-[85%] rounded-[22px] rounded-tr-xs px-4.5 py-3 text-[15px] leading-relaxed sm:max-w-[75%]">
+                    <div className="chat-user-bubble max-w-[85%] rounded-[22px] rounded-tr-xs px-4.5 py-3 text-[15px] leading-relaxed sm:max-w-[75%] bg-emerald-600/30 text-white border border-emerald-500/30">
                       <p className="whitespace-pre-wrap font-normal">{String(message.content ?? '')}</p>
                     </div>
                   </div>
                 ) : (
                   /* Assistant message */
-                  <div key={index} className="group mb-8 flex gap-3.5 md:gap-4 animate-fade-in-up">
-                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white shadow-md shadow-indigo-500/25 ring-2 ring-indigo-500/20">
+                  <div key={index} className="group mb-10 flex gap-3.5 md:gap-4 animate-fade-in-up">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-black font-bold shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500/20">
                       <NexoraIcon className="h-4 w-4" />
                     </div>
-                    <div className="chat-prose min-w-0 flex-1 pt-0.5">
-                      <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
-                        {String(message.content ?? '')}
-                      </ReactMarkdown>
-                      <div className="mt-1.5 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="chat-prose min-w-0 flex-1 pt-0.5 space-y-4">
+                      {/* RAG Sources Cards Header */}
+                      {message.sources && message.sources.length > 0 && (
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                              <span>🌐</span> Sources & Citation References ({message.sources.length})
+                            </span>
+                          </div>
+                          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin">
+                            {message.sources.map((src) => (
+                              <SourceCard key={src.id} source={src} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Markdown Text Response */}
+                      <div>
+                        <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
+                          {String(message.content ?? '')}
+                        </ReactMarkdown>
+                      </div>
+
+                      <div className="mt-2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <MessageCopyButton text={String(message.content ?? '')} />
                       </div>
                     </div>
@@ -337,45 +382,113 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Composer */}
+        {/* Composer with RAG controls */}
         <div className="shrink-0 border-t chat-border px-4 pb-4 pt-3 md:px-6 md:pb-6">
-          <form onSubmit={handleSubmitMessage} className="mx-auto max-w-3xl">
-            <div className="chat-composer flex items-end gap-2 rounded-[26px] px-4 py-2.5">
-              <textarea
-                rows={1}
-                value={chatInput}
-                onChange={(e) => {
-                  setChatInput(e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmitMessage(e);
-                  }
-                }}
-                placeholder="Message Nexora..."
-                className="max-h-[200px] min-h-[24px] flex-1 resize-none bg-transparent py-1 text-[15px] leading-relaxed outline-none placeholder:chat-text-muted"
-              />
+          <div className="mx-auto max-w-3xl space-y-2">
+            {/* RAG Controls Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
+              {/* Search Mode Selector */}
+              <div className="flex items-center gap-1 rounded-xl bg-white/5 p-1 border border-white/10">
+                <button
+                  onClick={() => setSearchMode('hybrid')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors text-[11px] font-medium ${
+                    searchMode === 'hybrid' ? 'bg-emerald-500 text-black shadow-sm font-semibold' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  🌐 Hybrid RAG
+                </button>
+                <button
+                  onClick={() => setSearchMode('web')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors text-[11px] font-medium ${
+                    searchMode === 'web' ? 'bg-emerald-500 text-black shadow-sm font-semibold' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  🔍 Web Only
+                </button>
+                <button
+                  onClick={() => setSearchMode('document')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors text-[11px] font-medium ${
+                    searchMode === 'document' ? 'bg-emerald-500 text-black shadow-sm font-semibold' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  📄 Doc RAG
+                </button>
+              </div>
+
+              {/* Upload & Select Knowledge Base Documents */}
               <button
-                type="submit"
-                disabled={!chatInput.trim()}
-                className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100"
+                onClick={() => setIsDocModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-emerald-300 hover:bg-white/10 hover:border-emerald-500/50 transition-all"
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                </svg>
+                <span>📚 Index / Attach Docs</span>
+                {selectedDocIds.length > 0 && (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-black">
+                    {selectedDocIds.length}
+                  </span>
+                )}
               </button>
             </div>
-            <p className="mt-2 text-center text-[11px] chat-text-muted">
-              Nexora can make mistakes. Consider checking important information.
-            </p>
-          </form>
+
+            {/* Input Composer */}
+            <form onSubmit={handleSubmitMessage}>
+              {/* Active Document Indicator Banner */}
+              {selectedDocIds.length > 0 && (
+                <div className="mb-2 flex items-center justify-between rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs text-emerald-300">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 font-bold">📄 Searching Active Document ({selectedDocIds.length})</span>
+                    <span className="text-[11px] text-gray-400">Mode: {searchMode.toUpperCase()} RAG</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsDocModalOpen(true)}
+                    className="text-[11px] underline hover:text-white transition-colors"
+                  >
+                    Manage Attached Docs
+                  </button>
+                </div>
+              )}
+
+              <div className="chat-composer flex items-end gap-2 rounded-[26px] px-4 py-2.5 border border-white/15 focus-within:border-emerald-500/60">
+                <textarea
+                  rows={1}
+                  value={chatInput}
+                  onChange={(e) => {
+                    setChatInput(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmitMessage(e);
+                    }
+                  }}
+                  placeholder={
+                    selectedDocIds.length > 0
+                      ? "Ask a question about your attached document..."
+                      : "Ask anything or search your RAG knowledge base..."
+                  }
+                  className="max-h-[200px] min-h-[24px] flex-1 resize-none bg-transparent py-1 text-[15px] leading-relaxed outline-none placeholder:chat-text-muted"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim()}
+                  className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-black font-bold shadow-md shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </button>
+              </div>
+              <p className="mt-1.5 text-center text-[11px] chat-text-muted">
+                Perplexity Hybrid RAG searches MongoDB Atlas Vector embeddings & real-time web pages.
+              </p>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
