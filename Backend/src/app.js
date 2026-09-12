@@ -24,7 +24,13 @@ app.use(
     })
 );
 
+//health check
 
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        message: "Perplexity App is Running"
+    })
+});
 
 /**
 @description -> Api's for auth....
