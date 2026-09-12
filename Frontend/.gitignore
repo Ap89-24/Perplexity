@@ -33,3 +33,4 @@ env/
 *.njsproj
 *.sln
 *.sw?
+dockerignore
