@@ -9,7 +9,7 @@ import documentRouter from "./routes/document.route.js";
 const app = express();
 
 
-/* 
+/** 
 @description -> these all are middlewares.....
 */
 app.use(express.json({ limit: "15mb" }));
@@ -18,7 +18,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: process.env.FRONTEND_URL,
         credentials: true,
         methods: ["GET" , "POST" , "PUT" , "DELETE"]
     })
@@ -26,19 +26,19 @@ app.use(
 
 
 
-/* 
+/**
 @description -> Api's for auth....
 */
 
 app.use("/api/auth", authRouter);
 
-/* 
-@description -> Api's for chat....
+/**
+ @description -> Api's for chat....
 */
 
 app.use("/api/chats" , chatRouter);
 
-/* 
+/**
 @description -> Api's for documents (RAG)....
 */
 

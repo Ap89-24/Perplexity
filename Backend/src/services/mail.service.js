@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-/* 
+/**
 @description: Verify the transporter configuration
 */
 
@@ -31,7 +31,7 @@ transporter.verify((error , success) => {
 
 
 
-/* 
+/**
 @description: Send an email using the configured transporter
 */
 
