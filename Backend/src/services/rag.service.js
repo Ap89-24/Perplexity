@@ -50,7 +50,7 @@ export const splitTextIntoChunks = (text, chunkSize = 600, chunkOverlap = 120, s
 /**
  * Perform vector search on MongoDB Atlas Vector Search, with fallback to in-memory cosine similarity
  */
-export const searchMongoDBVector = async (queryVector, filter = {}, topK = 5) => {
+export const searchMongoDBVector = async (queryVector, filter = {}, topK = 8) => {
   try {
     // Attempt MongoDB Atlas $vectorSearch pipeline
     const pipeline = [
@@ -87,13 +87,29 @@ export const searchMongoDBVector = async (queryVector, filter = {}, topK = 5) =>
   // Fallback: Cosine similarity over matching documents
   const mongoFilter = {};
   if (filter.user) {
-    mongoFilter.user = new mongoose.Types.ObjectId(filter.user);
+    if (typeof filter.user === "string" && mongoose.Types.ObjectId.isValid(filter.user)) {
+      mongoFilter.user = new mongoose.Types.ObjectId(filter.user);
+    } else {
+      mongoFilter.user = filter.user;
+    }
   }
   if (filter.sourceType) {
     mongoFilter.sourceType = filter.sourceType;
   }
   if (filter.document) {
-    mongoFilter.document = new mongoose.Types.ObjectId(filter.document);
+    if (typeof filter.document === "object" && filter.document.$in) {
+      mongoFilter.document = {
+        $in: filter.document.$in.map((id) =>
+          typeof id === "string" && mongoose.Types.ObjectId.isValid(id)
+            ? new mongoose.Types.ObjectId(id)
+            : id
+        ),
+      };
+    } else if (typeof filter.document === "string" && mongoose.Types.ObjectId.isValid(filter.document)) {
+      mongoFilter.document = new mongoose.Types.ObjectId(filter.document);
+    } else {
+      mongoFilter.document = filter.document;
+    }
   }
 
   const candidates = await VectorEmbedding.find(mongoFilter).lean();
@@ -185,18 +201,26 @@ export const processWebRAG = async (query, topK = 5) => {
 /**
  * Process Document RAG: Query user uploaded documents stored in MongoDB Atlas Vector Search
  */
-export const processDocumentRAG = async (query, userId, selectedDocIds = [], topK = 5) => {
+export const processDocumentRAG = async (query, userId, selectedDocIds = [], topK = 8) => {
   try {
     if (!userId) return [];
 
     const queryVector = await generateEmbedding(query);
     const filter = {
-      user: userId.toString(),
       sourceType: "document",
     };
 
+    if (userId && mongoose.Types.ObjectId.isValid(userId.toString())) {
+      filter.user = new mongoose.Types.ObjectId(userId.toString());
+    }
+
     if (selectedDocIds && selectedDocIds.length > 0) {
-      filter.document = { $in: selectedDocIds.map((id) => id.toString()) };
+      const validDocIds = selectedDocIds
+        .filter((id) => id && mongoose.Types.ObjectId.isValid(id.toString()))
+        .map((id) => new mongoose.Types.ObjectId(id.toString()));
+      if (validDocIds.length > 0) {
+        filter.document = { $in: validDocIds };
+      }
     }
 
     const results = await searchMongoDBVector(queryVector, filter, topK);

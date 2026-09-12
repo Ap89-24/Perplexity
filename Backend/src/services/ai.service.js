@@ -1,5 +1,6 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatMistralAI } from "@langchain/mistralai";
+import { ChatGroq } from "@langchain/groq";
 import { AIMessage, HumanMessage, SystemMessage, tool, createAgent } from "langchain";
 import { internetSearch } from "./internet.service.js";
 import { getHybridContext } from "./rag.service.js";
@@ -15,6 +16,11 @@ const mistralModel = new ChatMistralAI({
   apiKey: process.env.MISTRAL_API_KEY,
 });
 
+const groqModel = new ChatGroq({
+  model: "openai/gpt-oss-120b",
+  apiKey: process.env.GROQ_API_KEY,
+});
+
 const searchInternetTool = tool(internetSearch, {
   name: "searchInternet",
   description: `Search the internet for current information.
@@ -25,7 +31,7 @@ Use this tool whenever up-to-date information is needed.`,
 });
 
 const agent = createAgent({
-  model: geminiModel,
+  model: groqModel,
   tools: [searchInternetTool],
 });
 
@@ -67,7 +73,7 @@ export const generateResponse = async (messages, onChunk, options = {}) => {
     .filter(Boolean);
 
   let systemPromptText = `
-You are a helpful, engaging, and precise Perplexity AI assistant.
+You are a helpful, engaging, and precise Nexora AI assistant.
 Use relevant emojis in your responses to make them friendly, visually appealing, and engaging (e.g. 🏆, 🏏, 🚀, ✨, 💡, 📚).
 Use clean Markdown formatting (bold text, bullet points, headers) where appropriate.
 
@@ -80,6 +86,8 @@ GROUNDING & CITATION RULES:
 
   if (contextText) {
     systemPromptText += `\n\n=== RETRIEVED CONTEXT SOURCES (WEB & DOCUMENTS) ===\n${contextText}\n=================================================`;
+  } else if (searchMode === "document" || (selectedDocIds && selectedDocIds.length > 0)) {
+    systemPromptText += `\n\n=== RETRIEVED CONTEXT SOURCES ===\n[NO MATCHING DOCUMENT CONTEXT FOUND IN VECTOR SEARCH FOR THIS USER/DOCUMENT]. If the user asks about a document, politely inform them that no text content was found in their uploaded/selected documents, and ask them to verify that their file contains readable text and is indexed.\n=================================`;
   }
 
   const inputMessages = [
@@ -115,15 +123,7 @@ GROUNDING & CITATION RULES:
 
               if (text) {
                 fullResponseText += text;
-                if (text.length > 3) {
-                  for (const char of text) {
-                    await onChunk(char);
-                    await delay(12);
-                  }
-                } else {
-                  await onChunk(text);
-                  await delay(20);
-                }
+                await onChunk(text);
               }
             }
           }
@@ -154,7 +154,7 @@ GROUNDING & CITATION RULES:
 };
 
 export const generateTitle = async (message) => {
-  const response = await geminiModel.invoke([
+  const response = await groqModel.invoke([
     new SystemMessage(`
 You are a helpful assistant that generates concise and descriptive titles for chat conversations.
 User will provide you with the first message of a chat conversation, and you will generate a title that captures the essence of the conversation in 2-4 words. Clear, relevant, and engaging.
