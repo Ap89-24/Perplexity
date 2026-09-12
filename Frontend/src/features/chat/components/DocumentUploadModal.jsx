@@ -7,11 +7,8 @@ import { uploadDocumentApi, getDocumentsApi, deleteDocumentApi } from '../servic
 export const extractTextFromPdfArrayBuffer = (arrayBuffer) => {
   try {
     const bytes = new Uint8Array(arrayBuffer);
-    let str = "";
-    // Read bytes into string
-    for (let i = 0; i < bytes.length; i++) {
-      str += String.fromCharCode(bytes[i]);
-    }
+    const decoder = new TextDecoder("latin1");
+    const str = decoder.decode(bytes);
 
     const textBlocks = [];
     // Match text blocks enclosed in BT ... ET

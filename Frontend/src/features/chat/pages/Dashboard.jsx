@@ -201,10 +201,12 @@ const Dashboard = () => {
       >
         {/* Sidebar header */}
         <div className="flex items-center gap-2 px-3 pt-3 pb-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-black shadow-sm font-bold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-emerald-400 to-teal-500 text-black shadow-md font-bold">
             <NexoraIcon className="h-4 w-4" />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-white">Perplexity RAG</span>
+          <span className="text-[16px] font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            Nexora AI
+          </span>
         </div>
 
         {/* New chat */}
@@ -263,7 +265,6 @@ const Dashboard = () => {
               <p className="truncate text-[13px] font-medium">{user?.username || 'Guest'}</p>
               <p className="truncate text-[11px] chat-text-muted">{user?.email}</p>
             </div>
-            <ThemeToggle compact />
           </div>
         </div>
       </aside>
@@ -298,10 +299,6 @@ const Dashboard = () => {
                 MongoDB Atlas Vector RAG
               </span>
             )}
-          </div>
-
-          <div className="hidden md:block ml-2">
-            <ThemeToggle compact />
           </div>
         </header>
 
@@ -481,7 +478,7 @@ const Dashboard = () => {
                 </button>
               </div>
               <p className="mt-1.5 text-center text-[11px] chat-text-muted">
-                Perplexity Hybrid RAG searches MongoDB Atlas Vector embeddings & real-time web pages.
+                <span className="font-semibold text-emerald-400">Nexora Hybrid RAG</span> searches MongoDB Atlas Vector embeddings & real-time web pages.
               </p>
             </form>
           </div>

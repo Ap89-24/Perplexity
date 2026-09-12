@@ -47,10 +47,6 @@ const Login = () => {
 
     return (
         <div className="auth-shell relative flex min-h-screen items-center justify-center px-4">
-            <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
-                <ThemeToggle compact />
-            </div>
-
             <div className="w-full max-w-[400px]">
                 <div className="auth-card rounded-2xl shadow-sm">
                     <div className="border-b chat-border px-8 pt-8 pb-6 text-center">

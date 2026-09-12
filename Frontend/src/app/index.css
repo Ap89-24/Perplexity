@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-    --chat-bg: #f8fafc;
-    --chat-sidebar: #f1f5f9;
-    --chat-surface: #ffffff;
-    --chat-border: #e2e8f0;
-    --chat-text: #0f172a;
-    --chat-text-secondary: #475569;
-    --chat-text-muted: #94a3b8;
-    --chat-hover: #e2e8f0;
-    --chat-active: #cbd5e1;
-    --chat-user-bubble: #f1f5f9;
-    --chat-input-bg: #ffffff;
-    --chat-input-border: #cbd5e1;
-    --chat-code-bg: #f1f5f9;
-    --chat-accent: #4f46e5;
+    --chat-bg: #0b0f19;
+    --chat-sidebar: #070a12;
+    --chat-surface: #0f172a;
+    --chat-border: #1e293b;
+    --chat-text: #f8fafc;
+    --chat-text-secondary: #94a3b8;
+    --chat-text-muted: #64748b;
+    --chat-hover: #1e293b;
+    --chat-active: #334155;
+    --chat-user-bubble: #1e293b;
+    --chat-input-bg: #0f172a;
+    --chat-input-border: #334155;
+    --chat-code-bg: #020617;
+    --chat-accent: #6366f1;
 }
 
 .dark {
